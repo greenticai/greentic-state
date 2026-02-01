@@ -8,6 +8,18 @@ set -euo pipefail
 LOCAL_CHECK_ONLINE="${LOCAL_CHECK_ONLINE:-0}"
 LOCAL_CHECK_STRICT="${LOCAL_CHECK_STRICT:-0}"
 LOCAL_CHECK_VERBOSE="${LOCAL_CHECK_VERBOSE:-0}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RUST_TOOLCHAIN_FILE="${PROJECT_ROOT}/rust-toolchain.toml"
+if [[ -f "${RUST_TOOLCHAIN_FILE}" ]]; then
+  TOOLCHAIN_CHANNEL="$(awk -F'"' '/channel/ {print $2; exit}' "${RUST_TOOLCHAIN_FILE}")"
+  if [[ -n "${TOOLCHAIN_CHANNEL}" ]]; then
+    export RUSTUP_TOOLCHAIN="${TOOLCHAIN_CHANNEL}"
+    if [[ "${LOCAL_CHECK_VERBOSE}" != "0" ]]; then
+      echo "Using Rust toolchain ${RUSTUP_TOOLCHAIN} (from ${RUST_TOOLCHAIN_FILE})"
+    fi
+  fi
+fi
 SKIP_CODE=99
 REDIS_CONTAINER=""
 REDIS_MANAGED=0
