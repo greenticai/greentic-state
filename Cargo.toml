@@ -1,6 +1,6 @@
 [package]
 name = "greentic-state"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2024"
 license = "MIT"
 description = "Greentic JSON working-memory store with in-memory and Redis backends"
@@ -24,7 +24,7 @@ time = { version = "0.3", features = ["serde", "parsing"] }
 parking_lot = "0.12"
 dashmap = "6"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-redis = { version = "0.32", features = ["tokio-comp"], optional = true }
+redis = { version = "1", features = ["tokio-comp"], optional = true }
 schemars = { version = "1", optional = true }
 tracing = "0.1"
 
