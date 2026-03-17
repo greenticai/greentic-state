@@ -1,10 +1,10 @@
 [package]
 name = "greentic-state"
-version = "0.4.3"
+version = "0.4.4"
 edition = "2024"
 license = "MIT"
 description = "Greentic JSON working-memory store with in-memory and Redis backends"
-repository = "https://github.com/greentic-ai/greentic-state"
+repository = "https://github.com/greenticai/greentic-state"
 keywords = ["greentic", "state", "redis", "json", "multi-tenant"]
 categories = ["data-structures", "asynchronous"]
 readme = "README.md"
