@@ -1,41 +1,17 @@
-name: Auto Tag
+name: Auto tag
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: autotag-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
   tag:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Calculate crate versions
-        run: |
-          set -euo pipefail
-          ./scripts/version-tools.sh list_crates > /tmp/crates.txt
-          cat /tmp/crates.txt
-
-      - name: Create tags
-        env:
-          GIT_AUTHOR_NAME: github-actions
-          GIT_AUTHOR_EMAIL: github-actions@github.com
-          GIT_COMMITTER_NAME: github-actions
-          GIT_COMMITTER_EMAIL: github-actions@github.com
-        run: |
-          set -euo pipefail
-          while read -r name version manifest; do
-            tag="${name}-v${version}"
-            if git rev-parse --quiet --verify "refs/tags/${tag}" >/dev/null; then
-              echo "Tag ${tag} already exists"
-              continue
-            fi
-            echo "Creating ${tag}"
-            git tag -a "${tag}" -m "Release ${tag}"
-            git push origin "${tag}"
-          done < /tmp/crates.txt
+    uses: greenticai/.github/.github/workflows/auto-tag.yml@main
