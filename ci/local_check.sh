@@ -8,6 +8,7 @@ set -euo pipefail
 LOCAL_CHECK_ONLINE="${LOCAL_CHECK_ONLINE:-0}"
 LOCAL_CHECK_STRICT="${LOCAL_CHECK_STRICT:-0}"
 LOCAL_CHECK_VERBOSE="${LOCAL_CHECK_VERBOSE:-0}"
+LOCAL_CHECK_SKIP_REDIS="${LOCAL_CHECK_SKIP_REDIS:-0}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RUST_TOOLCHAIN_FILE="${PROJECT_ROOT}/rust-toolchain.toml"
@@ -101,6 +102,11 @@ stop_redis_ci() {
 trap stop_redis EXIT
 
 start_redis() {
+  if [[ "${LOCAL_CHECK_SKIP_REDIS}" == "1" ]]; then
+    echo "[skip] Redis provisioning disabled (LOCAL_CHECK_SKIP_REDIS=1)"
+    return "$SKIP_CODE"
+  fi
+
   if [[ -n "${REDIS_URL:-}" ]]; then
     echo "Using supplied REDIS_URL=${REDIS_URL}"
     return 0

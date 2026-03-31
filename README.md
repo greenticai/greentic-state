@@ -110,6 +110,7 @@ Run `ci/local_check.sh` to mirror the main GitHub Actions pipeline before pushin
 
 - `LOCAL_CHECK_ONLINE=1` – enable networked steps such as the publish dry run.
 - `LOCAL_CHECK_STRICT=1` – fail when optional tools are missing instead of skipping.
+- `LOCAL_CHECK_SKIP_REDIS=1` – skip Redis provisioning and the Redis-backed test step.
 - `LOCAL_CHECK_VERBOSE=1` – echo each command (`set -x`).
 - `LOCAL_CHECK_BYPASS=1` – skip the `git pre-push` hook that calls the script.
 
