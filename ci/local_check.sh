@@ -24,7 +24,7 @@ fi
 SKIP_CODE=99
 REDIS_CONTAINER=""
 REDIS_MANAGED=0
-HOST_PACKAGES=(-p greentic-state -p provider-common -p greentic-messaging-renderer)
+HOST_PACKAGES=(-p greentic-state -p provider-common)
 
 if [[ "${LOCAL_CHECK_VERBOSE}" != "0" ]]; then
   set -x

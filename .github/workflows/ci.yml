@@ -12,8 +12,8 @@ jobs:
   ci:
     uses: greenticai/.github/.github/workflows/host-crate-ci.yml@main
     with:
-      clippy-args: "-p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings"
-      test-args: "-p greentic-state -p provider-common -p greentic-messaging-renderer --all-features"
+      clippy-args: "-p greentic-state -p provider-common --all-targets --all-features -- -D warnings"
+      test-args: "-p greentic-state -p provider-common --all-features"
 
   state-packs:
     runs-on: ubuntu-latest
@@ -30,8 +30,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - uses: cargo-bins/cargo-binstall@main
+
       - name: Install greentic-pack
-        run: cargo install greentic-pack --locked || cargo install greentic-pack
+        run: cargo binstall greentic-pack --no-confirm
 
       - name: Build state gtpacks
         run: bash ./tools/build_state_packs.sh
