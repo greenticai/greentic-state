@@ -1,4 +1,6 @@
 /target
+/dist
+/.cache
 
 # OS
 .DS_Store

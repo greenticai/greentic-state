@@ -24,6 +24,7 @@ fi
 SKIP_CODE=99
 REDIS_CONTAINER=""
 REDIS_MANAGED=0
+HOST_PACKAGES=(-p greentic-state -p provider-common -p greentic-messaging-renderer)
 
 if [[ "${LOCAL_CHECK_VERBOSE}" != "0" ]]; then
   set -x
@@ -171,12 +172,18 @@ fmt_check() {
 
 clippy_check() {
   require_tool cargo || return $?
-  cargo clippy --all-targets -- -D warnings
+  cargo clippy "${HOST_PACKAGES[@]}" --all-targets -- -D warnings
 }
 
 build_check() {
   require_tool cargo || return $?
-  cargo build --workspace --locked
+  cargo build "${HOST_PACKAGES[@]}" --locked
+}
+
+state_packs_check() {
+  require_tool cargo || return $?
+  require_tool greentic-pack || return $?
+  bash ./tools/build_state_packs.sh
 }
 
 tests_check() {
@@ -185,7 +192,7 @@ tests_check() {
     return $?
   fi
   export REDIS_URL="${REDIS_URL:-redis://127.0.0.1:6379/}"
-  cargo test --workspace --all-features
+  cargo test "${HOST_PACKAGES[@]}" --all-features
 }
 
 deps_sanity() {
@@ -212,13 +219,16 @@ step "Rustfmt"
 run_or_skip "cargo fmt --all -- --check" fmt_check
 
 step "Clippy"
-run_or_skip "cargo clippy --all-targets -- -D warnings" clippy_check
+run_or_skip "cargo clippy host packages" clippy_check
 
 step "Build"
-run_or_skip "cargo build --workspace --locked" build_check
+run_or_skip "cargo build host packages" build_check
 
 step "Tests (with Redis)"
-run_or_skip "cargo test --workspace --all-features" tests_check
+run_or_skip "cargo test host packages --all-features" tests_check
+
+step "State Packs"
+run_or_skip "build state-memory/state-redis gtpacks" state_packs_check
 
 step "Dependency sanity"
 run_or_skip "cargo metadata path/git dependency check" deps_sanity

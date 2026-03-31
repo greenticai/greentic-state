@@ -1,0 +1,62 @@
+{
+  "name": "state-memory",
+  "version": "0.4.5",
+  "kind": "application",
+  "publisher": "Greentic",
+  "description": "In-memory key-value state provider. Suitable for development and testing.",
+  "component_sources": [
+    {
+      "id": "state-provider-memory",
+      "version": "0.4.5",
+      "world": "greentic:component/component-v0-v6-v0@0.6.1",
+      "supports": [
+        "component_config"
+      ],
+      "profiles": {
+        "default": "default",
+        "supported": [
+          "default"
+        ]
+      },
+      "capabilities": {
+        "wasi": {
+          "random": false,
+          "clocks": false
+        },
+        "host": {}
+      },
+      "wasm": "components/state-provider-memory/state-provider-memory.wasm",
+      "manifest": "components/state-provider-memory/component.manifest.json"
+    }
+  ],
+  "components": [
+    "state-provider-memory"
+  ],
+  "extensions": {
+    "greentic.ext.capabilities.v1": {
+      "kind": "greentic.ext.capabilities.v1",
+      "version": "0.4.5",
+      "inline": {
+        "schema_version": 1,
+        "offers": [
+          {
+            "offer_id": "state.memory.kv.01",
+            "cap_id": "greentic.cap.state.kv.v1",
+            "version": "0.4.5",
+            "provider": {
+              "component_ref": "state-provider-memory",
+              "op": "state.dispatch"
+            },
+            "priority": 100,
+            "requires_setup": false,
+            "metadata": {
+              "backend": "memory",
+              "ephemeral": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  "secret_requirements": []
+}

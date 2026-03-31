@@ -1,0 +1,78 @@
+{
+  "id": "state-provider-redis",
+  "version": "0.4.5",
+  "supports": [
+    "component_config"
+  ],
+  "world": "greentic:component/component-v0-v6-v0@0.6.1",
+  "profiles": {
+    "default": "default",
+    "supported": [
+      "default"
+    ]
+  },
+  "capabilities": {
+    "wasi": {},
+    "host": {}
+  },
+  "operations": [
+    {
+      "name": "qa-spec",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "default",
+              "setup",
+              "upgrade",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "description": "CBOR-encoded QA specification"
+      }
+    },
+    {
+      "name": "apply-answers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "default",
+              "setup",
+              "upgrade",
+              "remove"
+            ]
+          },
+          "answers_cbor": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "CBOR-encoded answers"
+          }
+        },
+        "required": [
+          "mode",
+          "answers_cbor"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "description": "CBOR-encoded result"
+      }
+    }
+  ],
+  "resources": {},
+  "dev_flows": {}
+}

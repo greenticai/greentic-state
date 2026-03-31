@@ -1,0 +1,4 @@
+provider_id: state-memory
+version: 1
+title: In-Memory State Provider setup
+questions: []

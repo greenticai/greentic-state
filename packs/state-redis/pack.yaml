@@ -1,0 +1,46 @@
+pack_id: state-redis
+version: 0.4.5
+kind: application
+publisher: Greentic
+name: Redis State Provider
+description: Persistent key-value state provider backed by Redis. Suitable for production
+  environments with distributed state requirements.
+components:
+- id: state-provider-redis
+  version: 0.4.5
+  world: greentic:component/component-v0-v6-v0@0.6.1
+  supports:
+  - component_config
+  profiles:
+    default: default
+    supported:
+    - default
+  capabilities:
+    wasi:
+      random: false
+      clocks: false
+    host: {}
+  wasm: components/state-provider-redis/state-provider-redis.wasm
+  manifest: components/state-provider-redis/component.manifest.json
+extensions:
+  greentic.ext.capabilities.v1:
+    kind: greentic.ext.capabilities.v1
+    version: 0.4.39
+    inline:
+      schema_version: 1
+      offers:
+      - offer_id: state.redis.kv.01
+        cap_id: greentic.cap.state.kv.v1
+        version: 0.4.39
+        provider:
+          component_ref: state-provider-redis
+          op: state.dispatch
+        priority: 50
+        requires_setup: true
+        setup:
+          qa_ref: components/state-provider-redis
+        metadata:
+          ephemeral: false
+          backend: redis
+assets:
+- path: secret-requirements.json

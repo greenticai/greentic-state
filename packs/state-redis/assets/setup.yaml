@@ -1,0 +1,4 @@
+provider_id: state-redis
+version: 1
+title: Redis State Provider setup
+questions: []
