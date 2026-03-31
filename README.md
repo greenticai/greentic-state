@@ -98,8 +98,8 @@ Redis uses `SCAN` + batched `DEL`, avoiding blocking the server on large keyspac
 ## Development & CI
 
 - `cargo fmt --all`
-- `cargo clippy -p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings`
-- `cargo test -p greentic-state -p provider-common -p greentic-messaging-renderer --all-features`
+- `cargo clippy -p greentic-state -p provider-common --all-targets --all-features -- -D warnings`
+- `cargo test -p greentic-state -p provider-common --all-features`
 - `bash ./tools/build_state_packs.sh`
 - GitHub Actions workflows:
   - `auto-tag.yml`: tags crates on version bumps merged to `master`.

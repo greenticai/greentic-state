@@ -3,6 +3,7 @@ name = "provider-common"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
+publish = false
 
 [dependencies]
 serde.workspace = true
@@ -12,7 +13,6 @@ schemars = { workspace = true, optional = true }
 sha2.workspace = true
 ciborium.workspace = true
 greentic-types.workspace = true
-greentic-messaging-renderer.workspace = true
 base64.workspace = true
 
 [dev-dependencies]

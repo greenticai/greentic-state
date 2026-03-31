@@ -29,7 +29,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy -p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings
+        run: cargo clippy -p greentic-state -p provider-common --all-targets --all-features -- -D warnings
 
       - name: Start Redis
         run: |
@@ -39,15 +39,63 @@ jobs:
       - name: Tests
         env:
           REDIS_URL: redis://127.0.0.1:6379/
-        run: cargo test -p greentic-state -p provider-common -p greentic-messaging-renderer --all-features
+        run: cargo test -p greentic-state -p provider-common --all-features
 
       - name: Stop Redis
         if: always()
         run: docker stop redis-ci
 
-  publish:
+  crate-release-check:
     runs-on: ubuntu-latest
     needs: lint-test
+    permissions:
+      contents: read
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          current_version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
+          previous_ref="${{ github.event.before }}"
+
+          if [ -z "${previous_ref}" ] || [ "${previous_ref}" = "0000000000000000000000000000000000000000" ]; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git cat-file -e "${previous_ref}:Cargo.toml" 2>/dev/null; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          previous_version="$(
+            git show "${previous_ref}:Cargo.toml" \
+            | sed -n 's/^version = "\(.*\)"/\1/p' \
+            | head -n1
+          )"
+
+          if [ "${current_version}" != "${previous_version}" ]; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [lint-test, crate-release-check]
+    if: needs.crate-release-check.outputs.should_publish == 'true'
     permissions:
       contents: read
       id-token: write
@@ -104,8 +152,10 @@ jobs:
         with:
           version: 1.2.0
 
+      - uses: cargo-bins/cargo-binstall@main
+
       - name: Install greentic-pack
-        run: cargo install greentic-pack --locked || cargo install greentic-pack
+        run: cargo binstall greentic-pack --no-confirm
 
       - name: Log in to GHCR
         uses: docker/login-action@v3

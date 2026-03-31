@@ -1,35 +1,39 @@
 # Security Fix Report
 
 Date: 2026-03-31 (UTC)
-Branch: `feature/push-ghcr`
+Branch: `feat/adding-packs`
 
 ## Inputs Reviewed
-- Security alerts JSON:
-  - `dependabot`: 0 alerts
-  - `code_scanning`: 0 alerts
-- New PR dependency vulnerabilities: 0
+- `security-alerts.json`
+  - `dependabot`: `[]`
+  - `code_scanning`: `[]`
+- `pr-vulnerable-changes.json`: `[]`
 
 ## PR Dependency Review
-- Dependency manifests detected in repository:
-  - `Cargo.toml`
-  - `Cargo.lock`
-- Files listed as changed by PR metadata:
-  - `.github/workflows/publish.yml`
-  - `Cargo.toml`
-  - `Cargo.lock`
-  - `README.md`
-  - `ci/local_check.sh`
-- No active dependency diff was present in the current checkout for `Cargo.toml` or `Cargo.lock`.
+Dependency files listed in `pr-changed-files.txt`:
+- `Cargo.toml`
+- `Cargo.lock`
+- `crates/provider-common/Cargo.toml`
+- `components/state-provider-memory/Cargo.toml`
+- `components/state-provider-redis/Cargo.toml`
+- `crates/greentic-messaging-renderer/Cargo.toml` (referenced by PR list, file not present in current workspace tree)
+
+Validation performed:
+- Confirmed local alert feeds are empty (`dependabot-alerts.json`, `code-scanning-alerts.json`, `security-alerts.json`).
+- Confirmed PR-specific vulnerable dependency feed is empty (`pr-vulnerable-changes.json`).
+- Reviewed Cargo manifests present in the workspace for obvious unsafe changes (none found).
 
 ## Remediation Actions
-- No vulnerabilities were reported by Dependabot or Code Scanning.
-- No new PR dependency vulnerabilities were reported.
-- No code or dependency changes were required to remediate security issues.
+- No Dependabot alerts to remediate.
+- No code scanning alerts to remediate.
+- No PR dependency vulnerabilities reported.
+- No dependency or source-code security fix was required or applied.
 
-## Additional Validation
-- Attempted local Rust advisory audit:
-  - Result: `cargo-audit` not installed in this CI environment.
+## Tooling Constraint
+- Attempted to run `cargo audit`, but CI sandbox prevented Rustup temp-file writes:
+  - `error: could not create temp file /home/runner/.rustup/tmp/...: Read-only file system (os error 30)`
+- Given empty alert inputs and empty PR vulnerability feed, this did not block remediation.
 
 ## Outcome
 - Status: No actionable vulnerabilities found.
-- Applied fixes: None (not required).
+- Applied fixes: None.
