@@ -1,0 +1,178 @@
+{
+  "$schema": "https://greentic-ai.github.io/greentic-component/schemas/v1/component.manifest.schema.json",
+  "artifacts": {
+    "component_wasm": "templates.wasm"
+  },
+  "capabilities": {
+    "host": {
+      "messaging": {
+        "inbound": true,
+        "outbound": true
+      },
+      "secrets": {
+        "required": []
+      },
+      "telemetry": {
+        "scope": "node"
+      }
+    },
+    "wasi": {
+      "clocks": true,
+      "filesystem": {
+        "mode": "none",
+        "mounts": []
+      },
+      "random": true
+    }
+  },
+  "config_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "templates component configuration",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "msg": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "message": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "output_path": {
+        "default": "text",
+        "description": "Dot path where the rendered string is stored",
+        "type": "string",
+        "x-default-applied": true
+      },
+      "template": {
+        "description": "Handlebars template used to render the reply",
+        "type": "string"
+      },
+      "wrap": {
+        "default": true,
+        "description": "Wrap output in an object when true; emit a raw string when false",
+        "type": "boolean",
+        "x-default-applied": true
+      },
+      "context": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "config": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "anyOf": [
+      {
+        "required": [
+          "msg"
+        ]
+      },
+      {
+        "required": [
+          "template"
+        ]
+      }
+    ]
+  },
+  "default_operation": "text",
+  "describe_export": "get-manifest",
+  "dev_flows": {
+    "custom": {
+      "format": "flow-ir-json",
+      "graph": {
+        "description": "Auto-generated custom config for ai.greentic.component-templates",
+        "id": "ai.greentic.component-templates.custom",
+        "kind": "component-config",
+        "nodes": {
+          "ask_config": {
+            "questions": {
+              "fields": []
+            },
+            "routing": [
+              {
+                "to": "emit_config"
+              }
+            ]
+          },
+          "emit_config": {
+            "template": "{\n  \"node_id\": \"templates\",\n  \"node\": {\n    \"text\": {\n      \"input\": {\n      }\n    },\n    \"routing\": [\n      { \"to\": \"NEXT_NODE_PLACEHOLDER\" }\n    ]\n  }\n}"
+          }
+        }
+      }
+    },
+    "default": {
+      "format": "flow-ir-json",
+      "graph": {
+        "description": "Auto-generated default config for ai.greentic.component-templates",
+        "id": "ai.greentic.component-templates.default",
+        "kind": "component-config",
+        "nodes": {
+          "emit_config": {
+            "template": "{\n  \"node_id\": \"templates\",\n  \"node\": {\n    \"text\": {\n      \"input\": {\n      }\n    },\n    \"routing\": [\n      { \"to\": \"NEXT_NODE_PLACEHOLDER\" }\n    ]\n  }\n}"
+          }
+        }
+      }
+    },
+    "text": {
+      "format": "flow-ir-json",
+      "graph": {
+        "description": "Auto-generated text config for ai.greentic.component-templates",
+        "id": "ai.greentic.component-templates.text",
+        "kind": "component-config",
+        "nodes": {
+          "emit_config": {
+            "template": "{\n  \"node_id\": \"templates\",\n  \"node\": {\n    \"text\": {\n      \"input\": {\n      }\n    },\n    \"routing\": [\n      { \"to\": \"NEXT_NODE_PLACEHOLDER\" }\n    ]\n  }\n}"
+          }
+        }
+      }
+    }
+  },
+  "hashes": {
+    "component_wasm": "blake3:e815d777677add7c89c1b61466585c6021ef34335e65edfd291895b7840e2b50"
+  },
+  "id": "ai.greentic.component-templates",
+  "limits": {
+    "memory_mb": 128,
+    "wall_time_ms": 1000
+  },
+  "name": "templates",
+  "operations": [
+    {
+      "input_schema": {
+        "$ref": "schemas/io/input.schema.json"
+      },
+      "name": "text",
+      "output_schema": {
+        "$ref": "schemas/io/output.schema.json"
+      }
+    }
+  ],
+  "profiles": {
+    "default": "stateless",
+    "supported": [
+      "stateless"
+    ]
+  },
+  "secret_requirements": [],
+  "supports": [
+    "messaging"
+  ],
+  "version": "0.4.43",
+  "world": "greentic:component/component@0.5.0"
+}

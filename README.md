@@ -98,11 +98,32 @@ Redis uses `SCAN` + batched `DEL`, avoiding blocking the server on large keyspac
 ## Development & CI
 
 - `cargo fmt --all`
-- `cargo clippy --all-targets -- -D warnings`
-- `cargo test --workspace --all-features`
+- `cargo clippy -p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings`
+- `cargo test -p greentic-state -p provider-common -p greentic-messaging-renderer --all-features`
+- `bash ./tools/build_state_packs.sh`
 - GitHub Actions workflows:
   - `auto-tag.yml`: tags crates on version bumps merged to `master`.
-  - `publish.yml`: fmt/clippy/test + idempotent publish via `katyo/publish-crates@v2`.
+  - `ci.yml`: host-crate checks plus a dedicated `state-packs` job that builds `state-memory.gtpack` and `state-redis.gtpack`.
+  - `publish.yml`: crates.io publish for the Rust crate plus GHCR publish for the two state `.gtpack` artifacts.
+
+### State packs
+
+This repo now owns the source and publishing pipeline for:
+
+- `state-memory.gtpack`
+- `state-redis.gtpack`
+
+The relevant directories are:
+
+- `components/state-provider-memory`
+- `components/state-provider-redis`
+- `packs/state-memory`
+- `packs/state-redis`
+
+The state pack build/publish entrypoints are:
+
+- `bash ./tools/build_state_packs.sh`
+- `bash ./tools/publish_state_packs_oci.sh`
 
 ### Local checks
 
@@ -111,6 +132,7 @@ Run `ci/local_check.sh` to mirror the main GitHub Actions pipeline before pushin
 - `LOCAL_CHECK_ONLINE=1` – enable networked steps such as the publish dry run.
 - `LOCAL_CHECK_STRICT=1` – fail when optional tools are missing instead of skipping.
 - `LOCAL_CHECK_SKIP_REDIS=1` – skip Redis provisioning and the Redis-backed test step.
+- `greentic-pack` – required for the state `.gtpack` build step in `ci/local_check.sh`.
 - `LOCAL_CHECK_VERBOSE=1` – echo each command (`set -x`).
 - `LOCAL_CHECK_BYPASS=1` – skip the `git pre-push` hook that calls the script.
 

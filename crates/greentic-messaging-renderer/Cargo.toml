@@ -1,0 +1,12 @@
+[package]
+name = "greentic-messaging-renderer"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+greentic-types = { workspace = true }
+thiserror = { workspace = true }

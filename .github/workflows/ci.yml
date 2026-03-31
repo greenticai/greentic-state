@@ -11,3 +11,27 @@ permissions:
 jobs:
   ci:
     uses: greenticai/.github/.github/workflows/host-crate-ci.yml@main
+    with:
+      clippy-args: "-p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings"
+      test-args: "-p greentic-state -p provider-common -p greentic-messaging-renderer --all-features"
+
+  state-packs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.0
+          components: clippy, rustfmt
+          targets: wasm32-wasip2
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install greentic-pack
+        run: cargo install greentic-pack --locked || cargo install greentic-pack
+
+      - name: Build state gtpacks
+        run: bash ./tools/build_state_packs.sh

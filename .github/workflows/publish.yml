@@ -29,7 +29,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy -p greentic-state -p provider-common -p greentic-messaging-renderer --all-targets --all-features -- -D warnings
 
       - name: Start Redis
         run: |
@@ -39,7 +39,7 @@ jobs:
       - name: Tests
         env:
           REDIS_URL: redis://127.0.0.1:6379/
-        run: cargo test --workspace --all-features
+        run: cargo test -p greentic-state -p provider-common -p greentic-messaging-renderer --all-features
 
       - name: Stop Redis
         if: always()
@@ -95,7 +95,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.90.0
+          toolchain: 1.94.0
+          targets: wasm32-wasip2
 
       - uses: Swatinem/rust-cache@v2
 
@@ -103,8 +104,8 @@ jobs:
         with:
           version: 1.2.0
 
-      - name: Package crate
-        run: cargo package --allow-dirty
+      - name: Install greentic-pack
+        run: cargo install greentic-pack --locked || cargo install greentic-pack
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -113,68 +114,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish backend OCI artifacts
+      - name: Publish state gtpacks
         env:
-          GITHUB_OWNER: ${{ github.repository_owner }}
-          GIT_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          crate_version="$(
-            cargo metadata --format-version 1 --no-deps \
-            | jq -r '.packages[] | select(.name=="greentic-state") | .version'
-          )"
-          crate_file="target/package/greentic-state-${crate_version}.crate"
-          publish_dir=".ghcr-publish"
-
-          if [ ! -f "${crate_file}" ]; then
-            echo "expected packaged crate at ${crate_file}" >&2
-            exit 1
-          fi
-
-          rm -rf "${publish_dir}"
-          mkdir -p "${publish_dir}"
-          cp "${crate_file}" "${publish_dir}/"
-          crate_basename="$(basename "${crate_file}")"
-
-          publish_backend() {
-            local backend_name="$1"
-            local feature_json="$2"
-            local ref_base="${OCI_REGISTRY}/${GITHUB_OWNER}/${OCI_REPO_PREFIX}/${backend_name}"
-            local metadata_file="${backend_name}.json"
-
-            cat > "${publish_dir}/${metadata_file}" <<EOF
-          {
-            "crate": "greentic-state",
-            "version": "${crate_version}",
-            "backend": "${backend_name}",
-            "features": ${feature_json},
-            "source": "https://github.com/${GITHUB_REPOSITORY}",
-            "revision": "${GIT_SHA}"
-          }
-          EOF
-
-            (
-              cd "${publish_dir}"
-              oras push "${ref_base}:${crate_version}" \
-                --artifact-type application/vnd.greentic.state.crate.v1 \
-                --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
-                --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
-                --annotation "org.opencontainers.image.version=${crate_version}" \
-                --annotation "org.opencontainers.image.title=${backend_name}" \
-                "${crate_basename}:application/vnd.rust.crate" \
-                "${metadata_file}:application/json"
-
-              oras push "${ref_base}:latest" \
-                --artifact-type application/vnd.greentic.state.crate.v1 \
-                --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
-                --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
-                --annotation "org.opencontainers.image.version=${crate_version}" \
-                --annotation "org.opencontainers.image.title=${backend_name}" \
-                "${crate_basename}:application/vnd.rust.crate" \
-                "${metadata_file}:application/json"
-            )
-          }
-
-          publish_backend "state-memory" '[]'
-          publish_backend "state-redis" '["redis"]'
+          OCI_ORG: ${{ github.repository_owner }}
+          PUBLISH_LATEST: 1
+        run: bash ./tools/publish_state_packs_oci.sh

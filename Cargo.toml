@@ -1,3 +1,34 @@
+[workspace]
+members = [
+    ".",
+    "crates/*",
+    "components/*",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+version = "0.4.5"
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+schemars = "1"
+sha2 = "0.10"
+ciborium = "0.2"
+base64 = "0.22"
+glob = "0.3"
+tempfile = "3"
+zip = "8"
+serde_yaml_bw = { package = "serde_yaml_gtc", version = "2.5.2" }
+greentic-types = "0.4"
+greentic-interfaces = "0.4"
+wit-bindgen = "0.54"
+greentic-messaging-renderer = { path = "crates/greentic-messaging-renderer" }
+provider-common = { path = "crates/provider-common" }
+
 [package]
 name = "greentic-state"
 version = "0.4.5"
@@ -15,19 +46,20 @@ redis = ["dep:redis"]
 schema = ["dep:schemars", "greentic-types/schemars"]
 
 [dependencies]
-greentic-types = "0.4"
-greentic-interfaces = "0.4"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-thiserror = "2"
+greentic-types.workspace = true
+greentic-interfaces.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 time = { version = "0.3", features = ["serde", "parsing"] }
 parking_lot = "0.12"
 dashmap = "6"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
 redis = { version = "1", features = ["tokio-comp"], optional = true }
-schemars = { version = "1", optional = true }
+schemars = { workspace = true, optional = true }
 tracing = "0.1"
 
 [dev-dependencies]
 proptest = "1"
 uuid = { version = "1", features = ["v4"] }
+serde_yaml_bw.workspace = true
