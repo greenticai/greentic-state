@@ -1,6 +1,6 @@
 [package]
 name = "greentic-state"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2024"
 license = "MIT"
 description = "Greentic JSON working-memory store with in-memory and Redis backends"

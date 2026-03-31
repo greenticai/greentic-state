@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   lint-test:
@@ -79,3 +80,92 @@ jobs:
           ignore-unpublished-changes: true
           check-repo: true
           dry-run: false
+
+  publish-ghcr:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    permissions:
+      contents: read
+      packages: write
+    env:
+      OCI_REGISTRY: ghcr.io
+      OCI_REPO_PREFIX: packs/state
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: oras-project/setup-oras@v1
+        with:
+          version: 1.2.0
+
+      - name: Package crate
+        run: cargo package --allow-dirty
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish backend OCI artifacts
+        env:
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          crate_version="$(
+            cargo metadata --format-version 1 --no-deps \
+            | jq -r '.packages[] | select(.name=="greentic-state") | .version'
+          )"
+          crate_file="target/package/greentic-state-${crate_version}.crate"
+
+          if [ ! -f "${crate_file}" ]; then
+            echo "expected packaged crate at ${crate_file}" >&2
+            exit 1
+          fi
+
+          publish_backend() {
+            local backend_name="$1"
+            local feature_json="$2"
+            local ref_base="${OCI_REGISTRY}/${GITHUB_OWNER}/${OCI_REPO_PREFIX}/${backend_name}"
+            local metadata_file="/tmp/${backend_name}.json"
+
+            cat > "${metadata_file}" <<EOF
+          {
+            "crate": "greentic-state",
+            "version": "${crate_version}",
+            "backend": "${backend_name}",
+            "features": ${feature_json},
+            "source": "https://github.com/${GITHUB_REPOSITORY}",
+            "revision": "${GIT_SHA}"
+          }
+          EOF
+
+            oras push "${ref_base}:${crate_version}" \
+              --artifact-type application/vnd.greentic.state.crate.v1 \
+              --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+              --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
+              --annotation "org.opencontainers.image.version=${crate_version}" \
+              --annotation "org.opencontainers.image.title=${backend_name}" \
+              "${crate_file}:application/vnd.rust.crate" \
+              "${metadata_file}:application/json"
+
+            oras push "${ref_base}:latest" \
+              --artifact-type application/vnd.greentic.state.crate.v1 \
+              --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+              --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
+              --annotation "org.opencontainers.image.version=${crate_version}" \
+              --annotation "org.opencontainers.image.title=${backend_name}" \
+              "${crate_file}:application/vnd.rust.crate" \
+              "${metadata_file}:application/json"
+          }
+
+          publish_backend "state-memory" '[]'
+          publish_backend "state-redis" '["redis"]'
