@@ -1,27 +1,35 @@
-# SECURITY_FIX_REPORT
+# Security Fix Report
 
-Date: 2026-03-30 (UTC)
-Repository: `/home/runner/work/greentic-state/greentic-state`
-Role: CI Security Reviewer
+Date: 2026-03-31 (UTC)
+Branch: `feature/push-ghcr`
 
 ## Inputs Reviewed
 - Security alerts JSON:
-  - `dependabot`: `[]`
-  - `code_scanning`: `[]`
-- New PR dependency vulnerabilities: `[]`
+  - `dependabot`: 0 alerts
+  - `code_scanning`: 0 alerts
+- New PR dependency vulnerabilities: 0
 
 ## PR Dependency Review
-- Dependency manifests in repo: `Cargo.toml`, `Cargo.lock`
-- Current PR/HEAD change set check:
-  - `git show --name-only --pretty='' HEAD` -> `.github/workflows/codeql.yml`
-  - `git diff --name-only HEAD~1..HEAD -- Cargo.toml Cargo.lock` -> no output
-- Result: No dependency-file changes were introduced by the current PR commit.
+- Dependency manifests detected in repository:
+  - `Cargo.toml`
+  - `Cargo.lock`
+- Files listed as changed by PR metadata:
+  - `.github/workflows/publish.yml`
+  - `Cargo.toml`
+  - `Cargo.lock`
+  - `README.md`
+  - `ci/local_check.sh`
+- No active dependency diff was present in the current checkout for `Cargo.toml` or `Cargo.lock`.
 
 ## Remediation Actions
-- No Dependabot alerts to remediate.
-- No code scanning alerts to remediate.
-- No new PR dependency vulnerabilities to remediate.
-- No code or dependency updates were required.
+- No vulnerabilities were reported by Dependabot or Code Scanning.
+- No new PR dependency vulnerabilities were reported.
+- No code or dependency changes were required to remediate security issues.
 
-## Files Modified
-- `SECURITY_FIX_REPORT.md` (updated)
+## Additional Validation
+- Attempted local Rust advisory audit:
+  - Result: `cargo-audit` not installed in this CI environment.
+
+## Outcome
+- Status: No actionable vulnerabilities found.
+- Applied fixes: None (not required).
