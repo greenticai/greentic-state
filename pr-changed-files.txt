@@ -1,5 +1,8 @@
 .github/workflows/publish.yml
-Cargo.lock
-Cargo.toml
-README.md
-ci/local_check.sh
+SECURITY_FIX_REPORT.md
+all-code-scanning-alerts.json
+codex-prompt.txt
+pr-changed-files.txt
+pr-code-scanning-filtered.json
+pr-comment.md
+security-alerts.json

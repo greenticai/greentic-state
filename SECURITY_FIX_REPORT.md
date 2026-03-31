@@ -1,35 +1,34 @@
 # Security Fix Report
 
 Date: 2026-03-31 (UTC)
-Branch: `feature/push-ghcr`
+Repository: `greentic-state`
 
 ## Inputs Reviewed
-- Security alerts JSON:
+- Security alerts JSON (`security-alerts.json`):
   - `dependabot`: 0 alerts
   - `code_scanning`: 0 alerts
-- New PR dependency vulnerabilities: 0
+- New PR dependency vulnerabilities (`pr-vulnerable-changes.json`): 0
 
 ## PR Dependency Review
-- Dependency manifests detected in repository:
+- Dependency manifests present in repo:
   - `Cargo.toml`
   - `Cargo.lock`
-- Files listed as changed by PR metadata:
+- PR changed files (`pr-changed-files.txt`) do not include dependency manifests:
   - `.github/workflows/publish.yml`
-  - `Cargo.toml`
-  - `Cargo.lock`
-  - `README.md`
-  - `ci/local_check.sh`
-- No active dependency diff was present in the current checkout for `Cargo.toml` or `Cargo.lock`.
+  - `SECURITY_FIX_REPORT.md`
+  - `all-code-scanning-alerts.json`
+  - `codex-prompt.txt`
+  - `pr-changed-files.txt`
+  - `pr-code-scanning-filtered.json`
+  - `pr-comment.md`
+  - `security-alerts.json`
+- Result: no new dependency vulnerabilities introduced by PR file changes.
 
 ## Remediation Actions
-- No vulnerabilities were reported by Dependabot or Code Scanning.
-- No new PR dependency vulnerabilities were reported.
-- No code or dependency changes were required to remediate security issues.
-
-## Additional Validation
-- Attempted local Rust advisory audit:
-  - Result: `cargo-audit` not installed in this CI environment.
+- No Dependabot or Code Scanning alerts were present.
+- No PR dependency vulnerabilities were reported.
+- No code or dependency updates were required.
 
 ## Outcome
 - Status: No actionable vulnerabilities found.
-- Applied fixes: None (not required).
+- Applied fixes: None.
