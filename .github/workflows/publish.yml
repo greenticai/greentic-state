@@ -125,19 +125,25 @@ jobs:
             | jq -r '.packages[] | select(.name=="greentic-state") | .version'
           )"
           crate_file="target/package/greentic-state-${crate_version}.crate"
+          publish_dir=".ghcr-publish"
 
           if [ ! -f "${crate_file}" ]; then
             echo "expected packaged crate at ${crate_file}" >&2
             exit 1
           fi
 
+          rm -rf "${publish_dir}"
+          mkdir -p "${publish_dir}"
+          cp "${crate_file}" "${publish_dir}/"
+          crate_basename="$(basename "${crate_file}")"
+
           publish_backend() {
             local backend_name="$1"
             local feature_json="$2"
             local ref_base="${OCI_REGISTRY}/${GITHUB_OWNER}/${OCI_REPO_PREFIX}/${backend_name}"
-            local metadata_file="/tmp/${backend_name}.json"
+            local metadata_file="${backend_name}.json"
 
-            cat > "${metadata_file}" <<EOF
+            cat > "${publish_dir}/${metadata_file}" <<EOF
           {
             "crate": "greentic-state",
             "version": "${crate_version}",
@@ -148,23 +154,26 @@ jobs:
           }
           EOF
 
-            oras push "${ref_base}:${crate_version}" \
-              --artifact-type application/vnd.greentic.state.crate.v1 \
-              --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
-              --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
-              --annotation "org.opencontainers.image.version=${crate_version}" \
-              --annotation "org.opencontainers.image.title=${backend_name}" \
-              "${crate_file}:application/vnd.rust.crate" \
-              "${metadata_file}:application/json"
+            (
+              cd "${publish_dir}"
+              oras push "${ref_base}:${crate_version}" \
+                --artifact-type application/vnd.greentic.state.crate.v1 \
+                --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+                --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
+                --annotation "org.opencontainers.image.version=${crate_version}" \
+                --annotation "org.opencontainers.image.title=${backend_name}" \
+                "${crate_basename}:application/vnd.rust.crate" \
+                "${metadata_file}:application/json"
 
-            oras push "${ref_base}:latest" \
-              --artifact-type application/vnd.greentic.state.crate.v1 \
-              --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
-              --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
-              --annotation "org.opencontainers.image.version=${crate_version}" \
-              --annotation "org.opencontainers.image.title=${backend_name}" \
-              "${crate_file}:application/vnd.rust.crate" \
-              "${metadata_file}:application/json"
+              oras push "${ref_base}:latest" \
+                --artifact-type application/vnd.greentic.state.crate.v1 \
+                --annotation "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+                --annotation "org.opencontainers.image.revision=${GIT_SHA}" \
+                --annotation "org.opencontainers.image.version=${crate_version}" \
+                --annotation "org.opencontainers.image.title=${backend_name}" \
+                "${crate_basename}:application/vnd.rust.crate" \
+                "${metadata_file}:application/json"
+            )
           }
 
           publish_backend "state-memory" '[]'
