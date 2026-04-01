@@ -12,6 +12,8 @@ jobs:
   ci:
     uses: greenticai/.github/.github/workflows/host-crate-ci.yml@main
     with:
+      run-semver-checks: true
+      semver-checks-package: "greentic-state,provider-common"
       clippy-args: "-p greentic-state -p provider-common --all-targets --all-features -- -D warnings"
       test-args: "-p greentic-state -p provider-common --all-features"
 
