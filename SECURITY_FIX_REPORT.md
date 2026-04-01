@@ -1,7 +1,7 @@
 # Security Fix Report
 
-Date: 2026-03-31 (UTC)
-Branch: `feat/adding-packs`
+Date: 2026-04-01 (UTC)
+Repository: `greentic-state`
 
 ## Inputs Reviewed
 - `security-alerts.json`
@@ -10,30 +10,20 @@ Branch: `feat/adding-packs`
 - `pr-vulnerable-changes.json`: `[]`
 
 ## PR Dependency Review
-Dependency files listed in `pr-changed-files.txt`:
-- `Cargo.toml`
-- `Cargo.lock`
-- `crates/provider-common/Cargo.toml`
-- `components/state-provider-memory/Cargo.toml`
-- `components/state-provider-redis/Cargo.toml`
-- `crates/greentic-messaging-renderer/Cargo.toml` (referenced by PR list, file not present in current workspace tree)
+Files listed in `pr-changed-files.txt`:
+- `.github/workflows/ci.yml`
+- `.github/workflows/codex-semver-fix.yml`
 
-Validation performed:
-- Confirmed local alert feeds are empty (`dependabot-alerts.json`, `code-scanning-alerts.json`, `security-alerts.json`).
-- Confirmed PR-specific vulnerable dependency feed is empty (`pr-vulnerable-changes.json`).
-- Reviewed Cargo manifests present in the workspace for obvious unsafe changes (none found).
+Assessment:
+- No dependency manifest or lockfile changes were present in the PR file list.
+- No new PR dependency vulnerabilities were reported by `pr-vulnerable-changes.json`.
 
 ## Remediation Actions
 - No Dependabot alerts to remediate.
 - No code scanning alerts to remediate.
-- No PR dependency vulnerabilities reported.
-- No dependency or source-code security fix was required or applied.
-
-## Tooling Constraint
-- Attempted to run `cargo audit`, but CI sandbox prevented Rustup temp-file writes:
-  - `error: could not create temp file /home/runner/.rustup/tmp/...: Read-only file system (os error 30)`
-- Given empty alert inputs and empty PR vulnerability feed, this did not block remediation.
+- No dependency vulnerabilities introduced by PR changes.
+- No code or dependency changes were required or applied.
 
 ## Outcome
-- Status: No actionable vulnerabilities found.
+- Status: No actionable security vulnerabilities found.
 - Applied fixes: None.
