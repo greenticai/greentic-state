@@ -20,17 +20,17 @@ Important rules:
 
 cargo-semver-checks output:
 [1m[32m    Building[0m greentic-state v0.4.5 (current)
-[1m[32m       Built[0m [  60.832s] (current)
+[1m[32m       Built[0m [  61.772s] (current)
 [1m[32m     Parsing[0m greentic-state v0.4.5 (current)
 [1m[32m      Parsed[0m [   0.006s] (current)
 [1m[32m    Building[0m greentic-state v0.4.5 (baseline)
-[1m[32m       Built[0m [  60.407s] (baseline)
+[1m[32m       Built[0m [  61.150s] (baseline)
 [1m[32m     Parsing[0m greentic-state v0.4.5 (baseline)
 [1m[32m      Parsed[0m [   0.005s] (baseline)
 [1m[32m    Checking[0m greentic-state v0.4.5 -> v0.4.5 (no change; assume minor)
 [1m[32m     Checked[0m [   0.016s] 196 checks: 196 pass, 56 skip
 [1m[32m     Summary[0m no semver update required
-[1m[32m    Finished[0m [ 123.423s] greentic-state
+[1m[32m    Finished[0m [ 125.234s] greentic-state
 error: failed to retrieve index of crate versions from registry
 
 Caused by:
