@@ -1,12 +1,1 @@
-.github/workflows/auto-tag.yml
 .github/workflows/ci.yml
-.github/workflows/codeql.yml
-.github/workflows/codex-security-fix.yml
-.github/workflows/codex-semver-fix.yml
-.github/workflows/dependency-review.yml
-.github/workflows/publish.yml
-SECURITY_FIX_REPORT.md
-SEMVER_FIX_REPORT.md
-codex-prompt.txt
-pr-changed-files.txt
-semver-output.txt
