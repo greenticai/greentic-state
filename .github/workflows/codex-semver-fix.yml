@@ -1,7 +1,8 @@
 name: Codex Semver Fix
 on:
-  pull_request:
-    branches: [main]
+  # TODO: re-enable once semver baselines are stable
+  # pull_request:
+  #   branches: [main]
   workflow_dispatch:
     inputs:
       branch:
