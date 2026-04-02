@@ -1,22 +1,24 @@
 # SEMVER Fix Report
 
 ## Scope
-Reviewed the provided `cargo-semver-checks` output for `greentic-state` (`v0.4.5 -> v0.4.5`).
+- Crate reviewed: `greentic-state`
+- Analyzer output reviewed: provided `cargo-semver-checks` log
 
-## Violations Analysis
-- Reported checks: `196 checks: 196 pass, 56 skip`.
-- Reported summary: `no semver update required`.
-- Result: no semver violations were reported (including no enum/struct/public-item/discriminant breakages to fix).
+## Violations Found
+- None.
+- Reported check result: `196 checks: 196 pass, 56 skip`
+- Reported summary: `no semver update required`
 
 ## Fixes Applied
-- No code changes were required.
-- No `#[non_exhaustive]` annotations were added.
-- No deprecated aliases were needed.
-- No crate version bump was applied.
+No source-level semver fixes were required because there were no semver violations.
+- No `#[non_exhaustive]` attributes added.
+- No enum discriminants changed.
+- No removed/renamed public items restored.
+- No version bump applied.
 
-## CI Failure Root Cause (Non-semver)
-The run failed after successful semver checks due to registry index lookup:
+## CI Failure Cause
+The failure shown is separate from API compatibility:
 - `failed to retrieve index of crate versions from registry`
 - `provider-common not found in registry (crates.io)`
 
-`provider-common` is a workspace-local dependency (`crates/provider-common`), so this is a `cargo-semver-checks` baseline/source configuration issue in CI, not a semver API compatibility violation in `greentic-state`.
+This is a registry/baseline retrieval issue for `cargo-semver-checks` in CI, not a semver API break in `greentic-state`.
