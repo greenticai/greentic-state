@@ -1,1 +1,3 @@
-.github/workflows/publish.yml
+components/state-provider-memory/src/lib.rs
+components/state-provider-redis/src/lib.rs
+crates/provider-common/src/component_v0_6.rs
