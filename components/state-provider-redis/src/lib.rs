@@ -299,6 +299,9 @@ fn build_describe_payload() -> DescribePayload {
             },
         ],
         schema_hash: hash,
+        capabilities: None,
+        profiles: None,
+        secret_requirements: vec![],
     }
 }
 

@@ -25,6 +25,116 @@ pub struct DescribePayload {
     pub config_schema: SchemaIr,
     pub redactions: Vec<RedactionRule>,
     pub schema_hash: String,
+
+    // -- Fields below replace component.manifest.json --
+    /// Structured capability contract (WASI + host).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<DescribeCapabilities>,
+
+    /// Profile metadata (default + supported list).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub profiles: Option<DescribeProfiles>,
+
+    /// Secret requirements declared by the component.
+    #[serde(default)]
+    pub secret_requirements: Vec<DescribeSecretRequirement>,
+}
+
+/// Capability contract matching greentic-types ComponentCapabilities.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeCapabilities {
+    #[serde(default)]
+    pub wasi: DescribeWasiCapabilities,
+    #[serde(default)]
+    pub host: DescribeHostCapabilities,
+}
+
+/// WASI capability declarations.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeWasiCapabilities {
+    #[serde(default)]
+    pub random: bool,
+    #[serde(default)]
+    pub clocks: bool,
+}
+
+/// Host capability declarations.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeHostCapabilities {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<DescribeStateCapabilities>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub secrets: Option<DescribeSecretsCapabilities>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub messaging: Option<DescribeMessagingCapabilities>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub events: Option<DescribeEventsCapabilities>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub http: Option<DescribeHttpCapabilities>,
+}
+
+/// State access requirements.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeStateCapabilities {
+    #[serde(default)]
+    pub read: bool,
+    #[serde(default)]
+    pub write: bool,
+}
+
+/// Secrets access requirements.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeSecretsCapabilities {
+    #[serde(default)]
+    pub required: Vec<DescribeSecretRequirement>,
+}
+
+/// Messaging capability declarations.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeMessagingCapabilities {
+    #[serde(default)]
+    pub inbound: bool,
+    #[serde(default)]
+    pub outbound: bool,
+}
+
+/// Events capability declarations.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeEventsCapabilities {
+    #[serde(default)]
+    pub inbound: bool,
+    #[serde(default)]
+    pub outbound: bool,
+}
+
+/// HTTP capability declarations.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeHttpCapabilities {
+    #[serde(default)]
+    pub client: bool,
+    #[serde(default)]
+    pub server: bool,
+}
+
+/// Profile metadata.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeProfiles {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default: Option<String>,
+    #[serde(default)]
+    pub supported: Vec<String>,
+}
+
+/// Secret requirement entry.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DescribeSecretRequirement {
+    pub key: String,
+    #[serde(default = "default_true")]
+    pub required: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
