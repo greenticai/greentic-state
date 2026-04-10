@@ -19,4 +19,5 @@ jobs:
     uses: greenticai/.github/.github/workflows/dev-publish.yml@main
     with:
       crates: "greentic-state"
+      exclude-crates: "state-provider-redis state-provider-memory"
     secrets: inherit
