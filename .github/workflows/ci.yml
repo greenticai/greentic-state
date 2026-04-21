@@ -14,8 +14,9 @@ jobs:
   ci:
     uses: greenticai/.github/.github/workflows/host-crate-ci.yml@main
     with:
-      run-semver-checks: false  # TODO: re-enable once semver baselines are stable
-      semver-checks-package: "greentic-state,provider-common"
+      # Semver advisory moved off PR onto a nightly schedule — see
+      # nightly-semver.yml. The old `run-semver-checks: false` flag and the
+      # `semver-checks-package` filter now live on the nightly caller.
       clippy-args: "-p greentic-state -p provider-common --all-targets --all-features -- -D warnings"
       test-args: "-p greentic-state -p provider-common --all-features"
 
