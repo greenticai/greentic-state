@@ -1,5 +1,5 @@
 pack_id: state-redis
-version: 0.4.5
+version: 0.5.1
 kind: application
 publisher: Greentic
 name: Redis State Provider
@@ -7,7 +7,7 @@ description: Persistent key-value state provider backed by Redis. Suitable for p
   environments with distributed state requirements.
 components:
 - id: state-provider-redis
-  version: 0.4.5
+  version: 0.5.1
   world: greentic:component/component-v0-v6-v0@0.6.1
   supports:
   - component_config

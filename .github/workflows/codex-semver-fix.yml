@@ -1,8 +1,16 @@
 name: Codex Semver Fix
+# Re-enabled on a nightly schedule alongside nightly-semver.yml. Was previously
+# disabled (pull_request trigger commented out) with a "re-enable once semver
+# baselines are stable" TODO — baselines are now stable, and cargo-semver-checks
+# now runs in advisory mode, so the Codex remediation path is safe to attach on
+# a schedule. See plans/binary-bifurcation.md Phase A.4 (Wave 2).
+
 on:
-  # TODO: re-enable once semver baselines are stable
-  # pull_request:
-  #   branches: [main]
+  schedule:
+    # 04:59 UTC — staggered against Wave 1 + telemetry codex-semver-fix callers:
+    # greentic-types 04:11, greentic-component 04:17, greentic-oauth 04:23,
+    # serde-yaml-gtc 04:29, greentic-secrets 04:37, greentic-telemetry 04:53.
+    - cron: "26 3 * * *"
   workflow_dispatch:
     inputs:
       branch:

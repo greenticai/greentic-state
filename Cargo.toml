@@ -8,7 +8,7 @@ resolver = "2"
 
 [workspace.package]
 edition = "2024"
-version = "0.4.6"
+version = "0.5.1"
 license = "MIT"
 
 [workspace.dependencies]
@@ -22,15 +22,15 @@ base64 = "0.22"
 glob = "0.3"
 tempfile = "3"
 zip = "8"
-serde_yaml_bw = { package = "serde_yaml_gtc", version = "2.5.2" }
-greentic-types = "0.4"
-greentic-interfaces = "0.4"
-wit-bindgen = "0.54"
+serde_yaml_bw = { package = "serde_yaml_gtc", version = "2.5" }
+greentic-types = "0.5"
+greentic-interfaces = "0.5"
+wit-bindgen = "0.57"
 provider-common = { path = "crates/provider-common" }
 
 [package]
 name = "greentic-state"
-version = "0.4.5"
+version = "0.5.1"
 edition = "2024"
 license = "MIT"
 description = "Greentic JSON working-memory store with in-memory and Redis backends"
