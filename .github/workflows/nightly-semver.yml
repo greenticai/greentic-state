@@ -1,0 +1,37 @@
+name: Nightly Semver Advisory
+
+# Advisory-mode cargo-semver-checks on a nightly schedule. Replaces the
+# `run-semver-checks: false` flag that was set in ci.yml with a "re-enable
+# once semver baselines are stable" TODO. Baselines are now stable, and
+# this path is nightly + advisory (continue-on-error in the reusable), so
+# it's safe to re-enable without any PR-side disruption. See
+# plans/binary-bifurcation.md Phase A. The real semver gate remains at
+# weekly-stable-prepare on main; this is the compass, not the gate.
+
+on:
+  schedule:
+    # 05:53 UTC — staggered against Wave 1 + telemetry nightly-semver callers:
+    # greentic-types 05:17, greentic-component 05:23, greentic-oauth 05:29,
+    # serde-yaml-gtc 05:35, greentic-secrets 05:41, greentic-telemetry 05:47.
+    - cron: "48 3 * * *"
+  workflow_dispatch:
+    inputs:
+      baseline-rev:
+        description: "Optional explicit baseline git ref (default: latest vX.Y.Z tag)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-semver-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  advisory:
+    uses: greenticai/.github/.github/workflows/nightly-semver-advisory.yml@main
+    with:
+      semver-checks-package: "greentic-state,provider-common"
+      semver-baseline-rev: ${{ inputs.baseline-rev || '' }}
