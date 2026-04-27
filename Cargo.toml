@@ -8,11 +8,10 @@ resolver = "2"
 
 [workspace.package]
 edition = "2024"
-version = "0.5.1"
+version = "0.6.0-dev.0"
 license = "MIT"
 
 [workspace.dependencies]
-serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 schemars = "1"
@@ -22,43 +21,109 @@ base64 = "0.22"
 glob = "0.3"
 tempfile = "3"
 zip = "8"
-serde_yaml_bw = { package = "serde_yaml_gtc", version = "2.5" }
-greentic-types = "0.5"
-greentic-interfaces = "0.5"
+greentic-types = ">=0.6.0-dev, <0.7.0-0"
+greentic-interfaces = ">=0.6.0-dev, <0.7.0-0"
 wit-bindgen = "0.57"
-provider-common = { path = "crates/provider-common" }
+
+[workspace.dependencies.serde]
+version = "1"
+features = [
+    "derive",
+]
+
+[workspace.dependencies.serde_yaml_bw]
+package = "serde_yaml_gtc"
+version = "2.5"
+
+[workspace.dependencies.provider-common]
+path = "crates/provider-common"
 
 [package]
 name = "greentic-state"
-version = "0.5.1"
+version = "0.6.0-dev.0"
 edition = "2024"
 license = "MIT"
 description = "Greentic JSON working-memory store with in-memory and Redis backends"
 repository = "https://github.com/greenticai/greentic-state"
-keywords = ["greentic", "state", "redis", "json", "multi-tenant"]
-categories = ["data-structures", "asynchronous"]
+keywords = [
+    "greentic",
+    "state",
+    "redis",
+    "json",
+    "multi-tenant",
+]
+categories = [
+    "data-structures",
+    "asynchronous",
+]
 readme = "README.md"
 
 [features]
-default = ["redis"]
-redis = ["dep:redis"]
-schema = ["dep:schemars", "greentic-types/schemars"]
+default = [
+    "redis",
+]
+redis = [
+    "dep:redis",
+]
+schema = [
+    "dep:schemars",
+    "greentic-types/schemars",
+]
 
 [dependencies]
-greentic-types.workspace = true
-greentic-interfaces.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
-time = { version = "0.3", features = ["serde", "parsing"] }
 parking_lot = "0.12"
 dashmap = "6"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-redis = { version = "1", features = ["tokio-comp"], optional = true }
-schemars = { workspace = true, optional = true }
 tracing = "0.1"
+
+[dependencies.greentic-types]
+workspace = true
+
+[dependencies.greentic-interfaces]
+workspace = true
+
+[dependencies.serde]
+workspace = true
+
+[dependencies.serde_json]
+workspace = true
+
+[dependencies.thiserror]
+workspace = true
+
+[dependencies.time]
+version = "0.3"
+features = [
+    "serde",
+    "parsing",
+]
+
+[dependencies.tokio]
+version = "1"
+features = [
+    "rt-multi-thread",
+    "macros",
+    "time",
+]
+
+[dependencies.redis]
+version = "1"
+features = [
+    "tokio-comp",
+]
+optional = true
+
+[dependencies.schemars]
+workspace = true
+optional = true
 
 [dev-dependencies]
 proptest = "1"
-uuid = { version = "1", features = ["v4"] }
-serde_yaml_bw.workspace = true
+
+[dev-dependencies.uuid]
+version = "1"
+features = [
+    "v4",
+]
+
+[dev-dependencies.serde_yaml_bw]
+workspace = true
