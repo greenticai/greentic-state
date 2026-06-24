@@ -749,9 +749,9 @@ dependencies = [
 
 [[package]]
 name = "greentic-interfaces"
-version = "1.1.0-dev.27127755811"
+version = "1.2.0-research.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c529dbde9ec0a596469ebce690a45d4dce6bf6089925cf23924bcbb01882369c"
+checksum = "a27e76f5a7de66ed4d85de1b6cf50ed751f62d3572012d30f2e6281e9989f7b0"
 dependencies = [
  "anyhow",
  "constant_time_eq",
@@ -767,7 +767,7 @@ dependencies = [
 
 [[package]]
 name = "greentic-state"
-version = "1.1.0-dev.0"
+version = "1.2.0-research.0"
 dependencies = [
  "dashmap",
  "greentic-interfaces",
@@ -788,9 +788,9 @@ dependencies = [
 
 [[package]]
 name = "greentic-types"
-version = "1.1.0-dev.27836473437"
+version = "1.2.0-research.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8c40256c6908985ab2bfc60026cab7a3971bbbb5f18d7303f2fffb070f14f39"
+checksum = "7d2a079903dae4d40cff9b2627feea1b19c47343b1066b55d7335ddfb055f7ac"
 dependencies = [
  "anyhow",
  "blake3",
@@ -1296,7 +1296,7 @@ dependencies = [
 
 [[package]]
 name = "provider-common"
-version = "1.1.0-dev.0"
+version = "1.2.0-research.0"
 dependencies = [
  "base64",
  "ciborium",
@@ -1769,7 +1769,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "state-provider-memory"
-version = "1.1.0-dev.0"
+version = "1.2.0-research.0"
 dependencies = [
  "base64",
  "greentic-types",
@@ -1782,7 +1782,7 @@ dependencies = [
 
 [[package]]
 name = "state-provider-redis"
-version = "1.1.0-dev.0"
+version = "1.2.0-research.0"
 dependencies = [
  "base64",
  "greentic-types",
