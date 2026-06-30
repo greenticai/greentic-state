@@ -38,7 +38,7 @@ jobs:
       - uses: cargo-bins/cargo-binstall@main
 
       - name: Install greentic-pack
-        run: cargo binstall greentic-pack --no-confirm
+        run: cargo binstall greentic-pack --no-confirm --locked --force
 
       - name: Build state gtpacks
         run: bash ./tools/build_state_packs.sh
