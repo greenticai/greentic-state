@@ -749,9 +749,9 @@ dependencies = [
 
 [[package]]
 name = "greentic-interfaces"
-version = "1.1.0-dev.28350999286"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85977a187680ce9f600e8c374c6b22ea9f9bd6920076b8ed36a03cec40b88531"
+checksum = "9deb2e524a4e233d32e2d1c10b4ba1090c751b0fe8b27df717c1c95c96a54367"
 dependencies = [
  "anyhow",
  "constant_time_eq",
@@ -788,9 +788,9 @@ dependencies = [
 
 [[package]]
 name = "greentic-types"
-version = "1.1.0-dev.28349771865"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4b060adbb4c91189385728573f655a86ff67f1ea80c3ef3e5c7bbd8a26b8468"
+checksum = "88acd5ecbc830d153563c36c0c3b467ef6b10c24562564765d4c1a095f8e12f2"
 dependencies = [
  "anyhow",
  "blake3",
@@ -1687,9 +1687,9 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml_gtc"
-version = "2.5.3"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8622b658226bcf6beb3b81db219b769bf35da3aa3975b07fa5294da14599a72a"
+checksum = "43c976bb29b98487bd85f6dfc695aa131136471ea93c2ce4502b23d740e66e8a"
 dependencies = [
  "base64",
  "indexmap",
