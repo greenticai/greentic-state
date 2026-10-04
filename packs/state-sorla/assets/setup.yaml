@@ -1,4 +1,15 @@
 provider_id: state-sorla
 version: 1
 title: SoRLa State Provider setup
-questions: []
+# One OPTIONAL question. The pack is otherwise configured by nothing: endpoint
+# and token come from the unit's metering block. greentic-setup writes a
+# `state/pack-configs/state-sorla.json` ONLY for answers to questions declared
+# here (an answer to an undeclared key is silently dropped), and greentic-start
+# reads `stable_component_state` from that file (greentic-start#675). A
+# deployment that never answers it keeps the per-revision keyspace.
+questions:
+- name: stable_component_state
+  kind: boolean
+  required: false
+  title: Keep component state across redeploys
+  help: When on, component state (not flow state) is keyed per environment instead of per revision, so it survives a redeploy.
