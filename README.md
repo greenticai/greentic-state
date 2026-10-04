@@ -37,6 +37,16 @@ let current = store.get_json(&ctx, prefix, &key, None)?;
 assert_eq!(current.unwrap(), json!({"status": "running"}));
 ```
 
+### Create-if-absent
+
+`set_json_if_absent(&ctx, prefix, &key, &value, ttl_secs)` atomically creates a key only when it
+does not exist (an expired entry counts as absent). It returns `Ok(true)` when this call created
+the key and `Ok(false)` when a live value already existed, which is left untouched. TTL follows
+`set_json` for a new key (`None`/`Some(0)` = no expiry, `Some(n)` = `n` seconds). The in-memory
+store holds the shard lock across the decision; Redis uses a single `SET ... NX [PX ms]`. The trait
+default returns an error, because a get-then-set fallback would not be atomic; custom stores must
+override it.
+
 ### Redis backend
 
 ```rust

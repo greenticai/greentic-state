@@ -119,3 +119,61 @@ async fn redis_ttl_preserved_on_none_update() {
         .expect("get redis TTL");
     assert!(value.is_none(), "expected redis TTL to be preserved");
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn in_memory_expired_entry_can_be_reclaimed_if_absent() {
+    let store = InMemoryStateStore::new();
+    let ctx = ctx();
+    let prefix = "flow/ttl-reclaim";
+    let key = StateKey::new("node/a");
+
+    assert!(
+        store
+            .set_json_if_absent(&ctx, prefix, &key, &json!({"n": 1}), Some(1))
+            .expect("create")
+    );
+    assert!(
+        !store
+            .set_json_if_absent(&ctx, prefix, &key, &json!({"n": 2}), Some(1))
+            .expect("live")
+    );
+
+    sleep(Duration::from_millis(1_100)).await;
+
+    assert!(
+        store
+            .set_json_if_absent(&ctx, prefix, &key, &json!({"n": 3}), None)
+            .expect("reclaim")
+    );
+    let value = store.get_json(&ctx, prefix, &key, None).expect("get");
+    assert_eq!(value, Some(json!({"n": 3})));
+}
+
+#[cfg(feature = "redis")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn redis_expired_entry_can_be_reclaimed_if_absent() {
+    use greentic_state::redis_store::RedisStateStore;
+    use std::env;
+
+    let Ok(url) = env::var("REDIS_URL") else {
+        return;
+    };
+    let Ok(store) = RedisStateStore::from_url(&url) else {
+        return;
+    };
+    let ctx = ctx();
+    let prefix = format!("flow/ttl-reclaim-{}", Uuid::new_v4());
+    let key = StateKey::new("node/a");
+
+    assert!(
+        store
+            .set_json_if_absent(&ctx, &prefix, &key, &json!(1), Some(1))
+            .expect("create")
+    );
+    sleep(Duration::from_millis(1_100)).await;
+    assert!(
+        store
+            .set_json_if_absent(&ctx, &prefix, &key, &json!(2), None)
+            .expect("reclaim")
+    );
+}
