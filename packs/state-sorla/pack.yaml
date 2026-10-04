@@ -1,5 +1,5 @@
 pack_id: state-sorla
-version: 0.5.1
+version: 1.2.0-dev.0
 kind: application
 publisher: Greentic
 name: SoRLa State Provider
@@ -8,7 +8,7 @@ description: Durable key-value state provider that stores conversation state thr
   token and never a database credential.
 components:
 - id: state-provider-sorla
-  version: 0.5.1
+  version: 1.2.0-dev.0
   world: greentic:component/component-v0-v6-v0@0.6.1
   supports:
   - component_config
