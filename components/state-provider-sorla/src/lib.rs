@@ -93,7 +93,7 @@ const I18N_PAIRS: &[(&str, &str)] = &[
     ),
     (
         "state.sorla.schema.config.endpoint.description",
-        "HTTPS base URL of the state door; read, write and delete are POSTed beneath it (e.g. https://admin.example/api/v1/ingest/state)",
+        "Optional HTTPS base URL of the state door (e.g. https://admin.example/api/v1/ingest/state). Leave empty to derive it from the metering endpoint",
     ),
     (
         "state.sorla.schema.config.token_ref.title",
@@ -101,12 +101,12 @@ const I18N_PAIRS: &[(&str, &str)] = &[
     ),
     (
         "state.sorla.schema.config.token_ref.description",
-        "Name of the secret that holds the per-unit state token. Never the token itself",
+        "Optional. Name of a secret for the state token, never the token itself. The runtime normally uses the unit's metering token",
     ),
     ("state.sorla.schema.config.key_prefix.title", "Key Prefix"),
     (
         "state.sorla.schema.config.key_prefix.description",
-        "Prefix for all keys to avoid collisions (default: greentic)",
+        "Prefix for all keys to avoid collisions (default: greentic-state)",
     ),
     (
         "state.sorla.schema.config.default_ttl_seconds.title",
@@ -130,7 +130,7 @@ const I18N_PAIRS: &[(&str, &str)] = &[
     ),
     (
         "state.sorla.schema.config.cache_max_entries.description",
-        "Maximum number of entries in the host read cache (default: 10000)",
+        "Maximum number of entries in the host read cache (default: 1024, 0 disables the cache)",
     ),
     ("state.sorla.qa.default.title", "Default"),
     ("state.sorla.qa.setup.title", "Setup"),
@@ -138,15 +138,15 @@ const I18N_PAIRS: &[(&str, &str)] = &[
     ("state.sorla.qa.remove.title", "Remove"),
     (
         "state.sorla.qa.setup.endpoint",
-        "State door endpoint (https)",
+        "State door endpoint (optional, https)",
     ),
     (
         "state.sorla.qa.setup.token_ref",
-        "Secret name of the state token",
+        "Secret name of the state token (optional)",
     ),
     (
         "state.sorla.qa.setup.key_prefix",
-        "Key prefix (default: greentic)",
+        "Key prefix (default: greentic-state)",
     ),
     (
         "state.sorla.qa.setup.default_ttl_seconds",
@@ -158,7 +158,7 @@ const I18N_PAIRS: &[(&str, &str)] = &[
     ),
     (
         "state.sorla.qa.setup.cache_max_entries",
-        "Read cache size in entries (default: 10000)",
+        "Read cache size in entries (default: 1024, 0 disables the cache)",
     ),
     ("state.sorla.flow.default.title", "Default setup"),
     (
@@ -268,24 +268,25 @@ struct RunResult {
     error: Option<String>,
 }
 
-const DEFAULT_KEY_PREFIX: &str = "greentic";
+const DEFAULT_KEY_PREFIX: &str = "greentic-state";
 const DEFAULT_REQUEST_TIMEOUT_MS: u64 = 5_000;
-const DEFAULT_CACHE_MAX_ENTRIES: u64 = 10_000;
+const DEFAULT_CACHE_MAX_ENTRIES: u64 = 1_024;
 
 const MIN_REQUEST_TIMEOUT_MS: u64 = 100;
 const MAX_REQUEST_TIMEOUT_MS: u64 = 60_000;
-const MAX_CACHE_MAX_ENTRIES: u64 = 10_000_000;
-/// Ten years. Anything longer is almost certainly a unit mistake.
-const MAX_TTL_SECONDS: u64 = 315_360_000;
+/// `0` disables the read cache, as in the runtime.
+const MAX_CACHE_MAX_ENTRIES: u64 = 100_000;
+/// The runtime holds TTL seconds in a `u32`; `0` means no expiry.
+const MAX_TTL_SECONDS: u64 = u32::MAX as u64;
 const MAX_ENDPOINT_LEN: usize = 2048;
 const MAX_TOKEN_REF_LEN: usize = 256;
-const MAX_KEY_PREFIX_LEN: usize = 128;
 /// Prefix of a per-unit state token. A `token_ref` starting with it is a
 /// pasted token, not a secret name.
 const TOKEN_VALUE_PREFIX: &str = "gtm_";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ProviderConfig {
+    #[serde(default)]
     endpoint: String,
     /// Name of the secret holding the bearer token. Never the token value.
     #[serde(default)]
@@ -344,8 +345,8 @@ fn build_describe_payload() -> DescribePayload {
 }
 
 const SETUP_QUESTIONS: &[provider_common::helpers::QaQuestionDef] = &[
-    ("endpoint", "state.sorla.qa.setup.endpoint", true),
-    ("token_ref", "state.sorla.qa.setup.token_ref", true),
+    ("endpoint", "state.sorla.qa.setup.endpoint", false),
+    ("token_ref", "state.sorla.qa.setup.token_ref", false),
     ("key_prefix", "state.sorla.qa.setup.key_prefix", false),
     (
         "default_ttl_seconds",
@@ -363,7 +364,7 @@ const SETUP_QUESTIONS: &[provider_common::helpers::QaQuestionDef] = &[
         false,
     ),
 ];
-const DEFAULT_KEYS: &[&str] = &["endpoint", "token_ref"];
+const DEFAULT_KEYS: &[&str] = &[];
 
 fn build_qa_spec(
     mode: bindings::exports::greentic::component::qa::Mode,
@@ -416,7 +417,7 @@ fn config_schema() -> SchemaIr {
         vec![
             (
                 "endpoint",
-                true,
+                false,
                 schema_str(
                     "state.sorla.schema.config.endpoint.title",
                     "state.sorla.schema.config.endpoint.description",
@@ -424,7 +425,7 @@ fn config_schema() -> SchemaIr {
             ),
             (
                 "token_ref",
-                true,
+                false,
                 schema_secret(
                     "state.sorla.schema.config.token_ref.title",
                     "state.sorla.schema.config.token_ref.description",
@@ -509,9 +510,11 @@ fn is_loopback_host(host: &str) -> bool {
     matches!(host, "localhost" | "127.0.0.1" | "[::1]")
 }
 
+/// An empty endpoint is valid: the runtime then derives the door from the
+/// unit's metering endpoint. A present one must be https (or loopback http).
 fn validate_endpoint(endpoint: &str) -> Result<(), String> {
     if endpoint.trim().is_empty() {
-        return Err("config validation failed: endpoint is required".to_string());
+        return Ok(());
     }
     if endpoint.len() > MAX_ENDPOINT_LEN {
         return Err(format!(
@@ -545,9 +548,11 @@ fn validate_endpoint(endpoint: &str) -> Result<(), String> {
     }
 }
 
+/// An empty token_ref is valid: the runtime authenticates with the unit's
+/// metering token and reads no second secret.
 fn validate_token_ref(token_ref: &str) -> Result<(), String> {
     if token_ref.trim().is_empty() {
-        return Err("config validation failed: token_ref is required".to_string());
+        return Ok(());
     }
     if token_ref.len() > MAX_TOKEN_REF_LEN {
         return Err(format!(
@@ -571,16 +576,10 @@ fn validate_token_ref(token_ref: &str) -> Result<(), String> {
 }
 
 fn validate_key_prefix(prefix: &str) -> Result<(), String> {
-    if prefix.trim().is_empty() {
-        return Err("config validation failed: key_prefix must not be empty".to_string());
-    }
-    if prefix.len() > MAX_KEY_PREFIX_LEN {
-        return Err(format!(
-            "config validation failed: key_prefix is longer than {MAX_KEY_PREFIX_LEN} characters"
-        ));
-    }
-    if prefix.chars().any(|c| c.is_whitespace() || c.is_control()) {
-        return Err("config validation failed: key_prefix must not contain whitespace".to_string());
+    if prefix.chars().any(char::is_control) {
+        return Err(
+            "config validation failed: key_prefix must not contain control characters".to_string(),
+        );
     }
     Ok(())
 }
@@ -602,9 +601,9 @@ fn validate_config_out(config: &ProviderConfig) -> Result<(), String> {
              {MIN_REQUEST_TIMEOUT_MS} and {MAX_REQUEST_TIMEOUT_MS}"
         ));
     }
-    if !(1..=MAX_CACHE_MAX_ENTRIES).contains(&config.cache_max_entries) {
+    if config.cache_max_entries > MAX_CACHE_MAX_ENTRIES {
         return Err(format!(
-            "config validation failed: cache_max_entries must be between 1 and {MAX_CACHE_MAX_ENTRIES}"
+            "config validation failed: cache_max_entries must be at most {MAX_CACHE_MAX_ENTRIES}"
         ));
     }
     Ok(())
@@ -738,19 +737,67 @@ mod tests {
     }
 
     #[test]
-    fn qa_spec_default_asks_endpoint_and_token_ref() {
-        let spec = build_qa_spec(Mode::Default);
-        assert_eq!(spec.mode, "default");
-        let ids: Vec<&str> = spec.questions.iter().map(|q| q.id.as_str()).collect();
-        assert!(ids.contains(&"endpoint"));
-        assert!(ids.contains(&"token_ref"));
+    fn no_qa_question_is_required() {
+        for mode in [Mode::Default, Mode::Setup, Mode::Upgrade] {
+            let spec = build_qa_spec(mode);
+            assert!(
+                spec.questions.iter().all(|q| !q.required),
+                "{}: a required question would show as an unanswered field",
+                spec.mode
+            );
+        }
+        assert_eq!(build_qa_spec(Mode::Setup).questions.len(), 6);
     }
 
     #[test]
-    fn qa_spec_setup_has_all_fields() {
-        let spec = build_qa_spec(Mode::Setup);
-        assert_eq!(spec.mode, "setup");
-        assert_eq!(spec.questions.len(), 6);
+    fn zero_answers_validate_with_runtime_defaults() {
+        for mode in [Mode::Default, Mode::Setup] {
+            let out = apply(mode, serde_json::json!({}));
+            assert_eq!(
+                out.get("ok"),
+                Some(&serde_json::Value::Bool(true)),
+                "{out:?}"
+            );
+            let config = out.get("config").expect("config");
+            assert_eq!(
+                config.get("key_prefix"),
+                Some(&serde_json::json!("greentic-state"))
+            );
+            assert_eq!(
+                config.get("request_timeout_ms"),
+                Some(&serde_json::json!(5000))
+            );
+            assert_eq!(
+                config.get("cache_max_entries"),
+                Some(&serde_json::json!(1024))
+            );
+        }
+    }
+
+    #[test]
+    fn zero_ttl_and_zero_cache_are_valid() {
+        let mut answers = valid();
+        answers["default_ttl_seconds"] = serde_json::json!(0);
+        answers["cache_max_entries"] = serde_json::json!(0);
+        let out = apply(Mode::Setup, answers);
+        assert_eq!(out.get("ok"), Some(&serde_json::Value::Bool(true)));
+    }
+
+    #[test]
+    fn only_key_prefix_validates() {
+        let out = apply(Mode::Setup, serde_json::json!({ "key_prefix": "acme" }));
+        assert_eq!(out.get("ok"), Some(&serde_json::Value::Bool(true)));
+        let config = out.get("config").expect("config");
+        assert_eq!(config.get("key_prefix"), Some(&serde_json::json!("acme")));
+    }
+
+    #[test]
+    fn empty_endpoint_and_token_ref_are_valid() {
+        let out = apply(
+            Mode::Setup,
+            serde_json::json!({ "endpoint": "", "token_ref": "  " }),
+        );
+        assert_eq!(out.get("ok"), Some(&serde_json::Value::Bool(true)));
     }
 
     #[test]
@@ -760,7 +807,7 @@ mod tests {
         let config = out.get("config").expect("config");
         assert_eq!(
             config.get("key_prefix"),
-            Some(&serde_json::json!("greentic"))
+            Some(&serde_json::json!("greentic-state"))
         );
         assert_eq!(
             config.get("request_timeout_ms"),
@@ -768,7 +815,7 @@ mod tests {
         );
         assert_eq!(
             config.get("cache_max_entries"),
-            Some(&serde_json::json!(10000))
+            Some(&serde_json::json!(1024))
         );
         assert!(
             config
@@ -792,15 +839,6 @@ mod tests {
             config.get("request_timeout_ms"),
             Some(&serde_json::json!(2500))
         );
-    }
-
-    #[test]
-    fn endpoint_is_required() {
-        let out = apply(
-            Mode::Setup,
-            serde_json::json!({ "token_ref": "state/door_token" }),
-        );
-        assert!(error_of(&out).contains("endpoint is required"));
     }
 
     #[test]
@@ -847,13 +885,7 @@ mod tests {
     }
 
     #[test]
-    fn token_ref_is_required_and_never_a_token_value() {
-        let out = apply(
-            Mode::Setup,
-            serde_json::json!({ "endpoint": "https://admin.example/state" }),
-        );
-        assert!(error_of(&out).contains("token_ref is required"));
-
+    fn token_ref_is_never_a_token_value() {
         let mut answers = valid();
         answers["token_ref"] = serde_json::json!("gtm_abcdef0123456789");
         assert!(error_of(&apply(Mode::Setup, answers)).contains("token value"));
@@ -868,8 +900,7 @@ mod tests {
         for (key, value) in [
             ("request_timeout_ms", serde_json::json!(50)),
             ("request_timeout_ms", serde_json::json!(60_001)),
-            ("cache_max_entries", serde_json::json!(0)),
-            ("cache_max_entries", serde_json::json!(10_000_001)),
+            ("cache_max_entries", serde_json::json!(100_001)),
             (
                 "default_ttl_seconds",
                 serde_json::json!(MAX_TTL_SECONDS + 1),
@@ -897,9 +928,9 @@ mod tests {
     }
 
     #[test]
-    fn key_prefix_is_validated() {
+    fn key_prefix_rejects_control_characters() {
         let mut answers = valid();
-        answers["key_prefix"] = serde_json::json!("has space");
+        answers["key_prefix"] = serde_json::json!("bad\nprefix");
         assert!(error_of(&apply(Mode::Setup, answers)).contains("key_prefix"));
     }
 
@@ -915,9 +946,9 @@ mod tests {
             "existing_config": {
                 "endpoint": "https://admin.example/api/v1/ingest/state",
                 "token_ref": "state/door_token",
-                "key_prefix": "greentic",
+                "key_prefix": "greentic-state",
                 "request_timeout_ms": 5000,
-                "cache_max_entries": 10000
+                "cache_max_entries": 1024
             },
             "key_prefix": "updated"
         });

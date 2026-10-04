@@ -108,26 +108,22 @@ fn redis_pack_declares_redis_secret_requirement() {
 }
 
 #[test]
-fn sorla_pack_declares_door_token_and_outranks_redis() {
+fn sorla_pack_asks_for_no_secret_and_outranks_redis() {
     let manifest = json(&repo_root().join("packs/state-sorla/pack.manifest.json"));
+    // The runtime authenticates with the unit's metering token, so the pack
+    // must not ask for any secret: setup would show it as an unanswered field.
     let requirements = manifest
         .get("secret_requirements")
         .and_then(JsonValue::as_array)
         .expect("secret_requirements");
     assert!(
-        requirements
-            .iter()
-            .any(|req| req.get("name").and_then(JsonValue::as_str) == Some("state_door_token")),
-        "state-sorla should declare the state_door_token secret requirement"
+        requirements.is_empty(),
+        "state-sorla must declare no secret requirements"
     );
-    // The pack must never ask for a database credential.
-    assert!(
-        !requirements.iter().any(|req| req
-            .get("name")
-            .and_then(JsonValue::as_str)
-            .is_some_and(|n| n.contains("postgres") || n.contains("database"))),
-        "state-sorla must not declare a database credential"
-    );
+    for name in ["secret-requirements.json", ".secret_requirements.json"] {
+        let reqs = json(&repo_root().join("packs/state-sorla").join(name));
+        assert_eq!(reqs.as_array().map(Vec::len), Some(0), "{name}");
+    }
 
     let priority = |pack: &str| {
         json(

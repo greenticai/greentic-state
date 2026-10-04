@@ -13,19 +13,21 @@ sockets. The HTTP key-value backend that talks to the door lives in the host
 
 ## Configuration
 
+Every key is optional; a pack with zero answers is valid. Defaults and bounds
+match the runtime (greentic-start `src/sorla_state/config.rs`).
+
 | key | type | default | notes |
 |---|---|---|---|
-| `endpoint` | string | required | `https` base URL of the door, e.g. `https://admin.example/api/v1/ingest/state`. `http` is accepted only for `localhost`, `127.0.0.1` and `[::1]` (development). No credentials, query or fragment. |
-| `token_ref` | string | required | The NAME of the secret holding the per-unit token. Never the token. A value starting with `gtm_` is refused as a pasted token. Redacted in describe output. |
-| `key_prefix` | string | `greentic` | Prefix for every key. 1 to 128 chars, no whitespace. |
-| `default_ttl_seconds` | u64, optional | none | At most ten years. Absent means the server's retention policy. |
+| `endpoint` | string | none | Explicit `https` door base URL. When empty the runtime derives the door from the unit's metering endpoint. A present value must be https; `http` is accepted only for `localhost`, `127.0.0.1` and `[::1]`. No credentials, query or fragment. |
+| `token_ref` | string | none | Optional NAME of a secret. Never the token. The runtime normally ignores it and uses the metering token. A value starting with `gtm_` or containing whitespace is refused. Redacted in describe output. |
+| `key_prefix` | string | `greentic-state` | No control characters. |
+| `default_ttl_seconds` | u64 | none | `0` or absent means no expiry. At most `u32::MAX`. |
 | `request_timeout_ms` | u64 | `5000` | 100 to 60000. |
-| `cache_max_entries` | u64 | `10000` | 1 to 10000000. Bounds the host read cache. |
+| `cache_max_entries` | u64 | `1024` | 0 to 100000. `0` disables the read cache. |
 
 Numeric answers may be JSON numbers or numeric strings; an unparsable value is a
-validation error, never ignored. `upgrade` keeps every key not present in the
-answers and re-validates the merged result, so an upgrade cannot downgrade the
-endpoint to plain `http`.
+validation error. `upgrade` keeps keys not present in the answers and
+re-validates the merged result, so it cannot downgrade the endpoint to http.
 
 ## Door contract (binding)
 
@@ -47,5 +49,15 @@ provider exists to remove.
 
 ## Secrets
 
-The pack declares one tenant secret requirement, `state_door_token`. The
-designer stages it; `token_ref` names it.
+None. The pack declares no secret requirement, so greentic-setup shows no
+unanswered required field. The credential is the unit's `metering` token.
+
+## Setup does not emit a pack-config without an answer
+
+greentic-setup writes `state/pack-configs/<pack_id>.json` from the answers the
+wizard collected (`emit_pack_config_input`, `src/qa/persist.rs`), not from the
+defaults apply-answers would produce, and it writes nothing when no answer has
+a value. With zero answers there is no `state/pack-configs/state-sorla.json`.
+A runtime that selects the provider only from a non-empty pack-config must
+therefore either also select it on the pack's presence, or the operator must
+answer at least one question (e.g. `key_prefix`).

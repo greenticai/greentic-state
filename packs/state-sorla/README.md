@@ -15,9 +15,9 @@ per-unit bearer token and never a database credential.
   and `state-memory` at 100; lower wins).
 
 ## Secrets
-- `state_door_token` (tenant): per-unit bearer token for the state door. The
-  provider config's `token_ref` holds the NAME of this secret, never the value.
+None. The runtime authenticates the state door with the unit's metering token
+and derives the door from the metering endpoint, so setup asks for nothing.
 
 ## Configuration
-`endpoint`, `token_ref`, `key_prefix`, `default_ttl_seconds`,
+All optional: `endpoint`, `token_ref`, `key_prefix`, `default_ttl_seconds`,
 `request_timeout_ms`, `cache_max_entries`. See `docs/state-sorla.md`.
