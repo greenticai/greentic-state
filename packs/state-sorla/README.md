@@ -20,4 +20,5 @@ and derives the door from the metering endpoint, so setup asks for nothing.
 
 ## Configuration
 All optional: `endpoint`, `token_ref`, `key_prefix`, `default_ttl_seconds`,
-`request_timeout_ms`, `cache_max_entries`. See `docs/state-sorla.md`.
+`request_timeout_ms`, `cache_max_entries`, `stable_component_state`. Only
+`stable_component_state` is a declared setup question (`assets/setup.yaml`). See `docs/state-sorla.md`.

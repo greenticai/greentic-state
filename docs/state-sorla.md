@@ -24,6 +24,7 @@ match the runtime (greentic-start `src/sorla_state/config.rs`).
 | `default_ttl_seconds` | u64 | none | `0` or absent means no expiry. At most `u32::MAX`. |
 | `request_timeout_ms` | u64 | `5000` | 100 to 60000. |
 | `cache_max_entries` | u64 | `1024` | 0 to 100000. `0` disables the read cache. |
+| `stable_component_state` | bool | `false` | When on, component state (keys not starting `pack/`) is keyed per environment instead of per revision, so it survives a redeploy; flow state stays per revision (greentic-start#675). The only key the pack's `setup.yaml` DECLARES, since 1.2.0-dev.1: greentic-setup writes a pack-config entry only for declared questions. |
 
 Numeric answers may be JSON numbers or numeric strings; an unparsable value is a
 validation error. `upgrade` keeps keys not present in the answers and
