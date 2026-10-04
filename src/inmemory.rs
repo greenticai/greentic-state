@@ -158,6 +158,36 @@ impl StateStore for InMemoryStateStore {
         }
     }
 
+    fn set_json_if_absent(
+        &self,
+        tenant: &TenantCtx,
+        prefix: &str,
+        key: &StateKey,
+        value: &Value,
+        ttl_secs: Option<u32>,
+    ) -> GResult<bool> {
+        let fqn = self.entry_key(tenant, prefix, key);
+        let now = OffsetDateTime::now_utc();
+        let expires_at = Self::compute_deadline(now, ttl_secs);
+
+        // The shard lock is held by the entry guard for the whole decision.
+        match self.entries.entry(fqn.as_str().to_owned()) {
+            Entry::Vacant(vacant) => {
+                vacant.insert(StoredValue::new(value.clone(), expires_at));
+                Ok(true)
+            }
+            Entry::Occupied(mut occupied) => {
+                let entry = occupied.get_mut();
+                if entry.is_expired(now) {
+                    *entry = StoredValue::new(value.clone(), expires_at);
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
+            }
+        }
+    }
+
     fn del(&self, tenant: &TenantCtx, prefix: &str, key: &StateKey) -> GResult<bool> {
         let fqn = self.entry_key(tenant, prefix, key);
         Ok(self.entries.remove(fqn.as_str()).is_some())
