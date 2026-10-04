@@ -1794,6 +1794,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "state-provider-sorla"
+version = "1.2.0-dev.0"
+dependencies = [
+ "base64",
+ "greentic-types",
+ "provider-common",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "wit-bindgen 0.57.1",
+]
+
+[[package]]
 name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

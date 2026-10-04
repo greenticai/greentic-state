@@ -100,3 +100,4 @@ build_pack() {
 
 build_pack "state-memory" "state-provider-memory"
 build_pack "state-redis" "state-provider-redis"
+build_pack "state-sorla" "state-provider-sorla"

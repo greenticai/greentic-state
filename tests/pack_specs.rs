@@ -8,7 +8,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn pack_dirs() -> Vec<PathBuf> {
-    ["state-memory", "state-redis"]
+    ["state-memory", "state-redis", "state-sorla"]
         .into_iter()
         .map(|name| repo_root().join("packs").join(name))
         .collect()
@@ -105,4 +105,45 @@ fn redis_pack_declares_redis_secret_requirement() {
         }),
         "state-redis should declare redis_url tenant secret requirement"
     );
+}
+
+#[test]
+fn sorla_pack_declares_door_token_and_outranks_redis() {
+    let manifest = json(&repo_root().join("packs/state-sorla/pack.manifest.json"));
+    let requirements = manifest
+        .get("secret_requirements")
+        .and_then(JsonValue::as_array)
+        .expect("secret_requirements");
+    assert!(
+        requirements
+            .iter()
+            .any(|req| req.get("name").and_then(JsonValue::as_str) == Some("state_door_token")),
+        "state-sorla should declare the state_door_token secret requirement"
+    );
+    // The pack must never ask for a database credential.
+    assert!(
+        !requirements.iter().any(|req| req
+            .get("name")
+            .and_then(JsonValue::as_str)
+            .is_some_and(|n| n.contains("postgres") || n.contains("database"))),
+        "state-sorla must not declare a database credential"
+    );
+
+    let priority = |pack: &str| {
+        json(
+            &repo_root()
+                .join("packs")
+                .join(pack)
+                .join("pack.manifest.json"),
+        )
+        .pointer("/extensions/greentic.ext.capabilities.v1/inline/offers/0/priority")
+        .and_then(JsonValue::as_u64)
+        .expect("offer priority")
+    };
+    let sorla = priority("state-sorla");
+    assert!(
+        sorla < priority("state-redis"),
+        "lower priority number wins"
+    );
+    assert!(sorla < priority("state-memory"));
 }
