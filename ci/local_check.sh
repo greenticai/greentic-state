@@ -228,7 +228,7 @@ step "Tests (with Redis)"
 run_or_skip "cargo test host packages --all-features" tests_check
 
 step "State Packs"
-run_or_skip "build state-memory/state-redis gtpacks" state_packs_check
+run_or_skip "build state-memory/state-redis/state-sorla gtpacks" state_packs_check
 
 step "Dependency sanity"
 run_or_skip "cargo metadata path/git dependency check" deps_sanity

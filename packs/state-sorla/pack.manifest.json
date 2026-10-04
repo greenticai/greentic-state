@@ -1,0 +1,65 @@
+{
+  "name": "state-sorla",
+  "version": "1.2.0-dev.0",
+  "kind": "application",
+  "publisher": "Greentic",
+  "description": "Durable key-value state provider that stores conversation state through an HTTPS state door hosted by the platform. The deployed runtime holds a per-unit token and never a database credential.",
+  "component_sources": [
+    {
+      "id": "state-provider-sorla",
+      "version": "1.2.0-dev.0",
+      "world": "greentic:component/component-v0-v6-v0@0.6.1",
+      "supports": [
+        "component_config"
+      ],
+      "profiles": {
+        "default": "default",
+        "supported": [
+          "default"
+        ]
+      },
+      "capabilities": {
+        "wasi": {
+          "random": false,
+          "clocks": false
+        },
+        "host": {}
+      },
+      "wasm": "components/state-provider-sorla/state-provider-sorla.wasm",
+      "manifest": "components/state-provider-sorla/component.manifest.json"
+    }
+  ],
+  "components": [
+    "state-provider-sorla"
+  ],
+  "extensions": {
+    "greentic.ext.capabilities.v1": {
+      "kind": "greentic.ext.capabilities.v1",
+      "version": "1.2.0-dev.0",
+      "inline": {
+        "schema_version": 1,
+        "offers": [
+          {
+            "offer_id": "state.sorla.kv.01",
+            "cap_id": "greentic.cap.state.kv.v1",
+            "version": "1.2.0-dev.0",
+            "provider": {
+              "component_ref": "state-provider-sorla",
+              "op": "state.dispatch"
+            },
+            "priority": 40,
+            "requires_setup": true,
+            "setup": {
+              "qa_ref": "components/state-provider-sorla"
+            },
+            "metadata": {
+              "ephemeral": false,
+              "backend": "sorla"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "secret_requirements": []
+}

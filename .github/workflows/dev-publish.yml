@@ -23,7 +23,7 @@ jobs:
   dev-prepare:
     uses: greenticai/.github/.github/workflows/dev-prepare.yml@main
     with:
-      exclude-crates: "state-provider-redis state-provider-memory"
+      exclude-crates: "state-provider-redis state-provider-memory state-provider-sorla"
 
   dev-publish:
     needs: [dev-prepare]

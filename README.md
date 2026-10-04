@@ -103,7 +103,7 @@ Redis uses `SCAN` + batched `DEL`, avoiding blocking the server on large keyspac
 - `bash ./tools/build_state_packs.sh`
 - GitHub Actions workflows:
   - `auto-tag.yml`: tags crates on version bumps merged to `master`.
-  - `ci.yml`: host-crate checks plus a dedicated `state-packs` job that builds `state-memory.gtpack` and `state-redis.gtpack`.
+  - `ci.yml`: host-crate checks plus a dedicated `state-packs` job that builds `state-memory.gtpack`, `state-redis.gtpack` and `state-sorla.gtpack`.
   - `publish.yml`: crates.io publish for the Rust crate plus GHCR publish for the two state `.gtpack` artifacts.
 
 ### State packs
@@ -112,13 +112,16 @@ This repo now owns the source and publishing pipeline for:
 
 - `state-memory.gtpack`
 - `state-redis.gtpack`
+- `state-sorla.gtpack`
 
 The relevant directories are:
 
 - `components/state-provider-memory`
 - `components/state-provider-redis`
+- `components/state-provider-sorla`
 - `packs/state-memory`
 - `packs/state-redis`
+- `packs/state-sorla`
 
 The state pack build/publish entrypoints are:
 
