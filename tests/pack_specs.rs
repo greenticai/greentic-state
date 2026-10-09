@@ -8,7 +8,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn pack_dirs() -> Vec<PathBuf> {
-    ["state-memory", "state-redis"]
+    ["state-memory", "state-redis", "state-sorla"]
         .into_iter()
         .map(|name| repo_root().join("packs").join(name))
         .collect()
@@ -105,4 +105,41 @@ fn redis_pack_declares_redis_secret_requirement() {
         }),
         "state-redis should declare redis_url tenant secret requirement"
     );
+}
+
+#[test]
+fn sorla_pack_asks_for_no_secret_and_outranks_redis() {
+    let manifest = json(&repo_root().join("packs/state-sorla/pack.manifest.json"));
+    // The runtime authenticates with the unit's metering token, so the pack
+    // must not ask for any secret: setup would show it as an unanswered field.
+    let requirements = manifest
+        .get("secret_requirements")
+        .and_then(JsonValue::as_array)
+        .expect("secret_requirements");
+    assert!(
+        requirements.is_empty(),
+        "state-sorla must declare no secret requirements"
+    );
+    for name in ["secret-requirements.json", ".secret_requirements.json"] {
+        let reqs = json(&repo_root().join("packs/state-sorla").join(name));
+        assert_eq!(reqs.as_array().map(Vec::len), Some(0), "{name}");
+    }
+
+    let priority = |pack: &str| {
+        json(
+            &repo_root()
+                .join("packs")
+                .join(pack)
+                .join("pack.manifest.json"),
+        )
+        .pointer("/extensions/greentic.ext.capabilities.v1/inline/offers/0/priority")
+        .and_then(JsonValue::as_u64)
+        .expect("offer priority")
+    };
+    let sorla = priority("state-sorla");
+    assert!(
+        sorla < priority("state-redis"),
+        "lower priority number wins"
+    );
+    assert!(sorla < priority("state-memory"));
 }

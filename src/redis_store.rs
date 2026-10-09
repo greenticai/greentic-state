@@ -152,6 +152,31 @@ impl StateStore for RedisStateStore {
         self.write_document(&fqn, &document, ttl_secs)
     }
 
+    fn set_json_if_absent(
+        &self,
+        tenant: &TenantCtx,
+        prefix: &str,
+        key: &StateKey,
+        value: &Value,
+        ttl_secs: Option<u32>,
+    ) -> GResult<bool> {
+        let fqn = self.entry_key(tenant, prefix, key);
+        let payload = serde_json::to_string(value).map_err(from_serde)?;
+        let px_ms = match ttl_secs {
+            Some(ttl) if ttl > 0 => Some(u64::from(ttl) * 1_000),
+            _ => None,
+        };
+        let reply: Option<String> = self.with_connection(|conn| {
+            let mut cmd = redis::cmd("SET");
+            cmd.arg(fqn.as_ref()).arg(payload.as_str()).arg("NX");
+            if let Some(ms) = px_ms {
+                cmd.arg("PX").arg(ms);
+            }
+            cmd.query(conn)
+        })?;
+        Ok(reply.is_some())
+    }
+
     fn del(&self, tenant: &TenantCtx, prefix: &str, key: &StateKey) -> GResult<bool> {
         let fqn = self.entry_key(tenant, prefix, key);
         let removed: i64 =

@@ -37,6 +37,16 @@ let current = store.get_json(&ctx, prefix, &key, None)?;
 assert_eq!(current.unwrap(), json!({"status": "running"}));
 ```
 
+### Create-if-absent
+
+`set_json_if_absent(&ctx, prefix, &key, &value, ttl_secs)` atomically creates a key only when it
+does not exist (an expired entry counts as absent). It returns `Ok(true)` when this call created
+the key and `Ok(false)` when a live value already existed, which is left untouched. TTL follows
+`set_json` for a new key (`None`/`Some(0)` = no expiry, `Some(n)` = `n` seconds). The in-memory
+store holds the shard lock across the decision; Redis uses a single `SET ... NX [PX ms]`. The trait
+default returns an error, because a get-then-set fallback would not be atomic; custom stores must
+override it.
+
 ### Redis backend
 
 ```rust
@@ -103,7 +113,7 @@ Redis uses `SCAN` + batched `DEL`, avoiding blocking the server on large keyspac
 - `bash ./tools/build_state_packs.sh`
 - GitHub Actions workflows:
   - `auto-tag.yml`: tags crates on version bumps merged to `master`.
-  - `ci.yml`: host-crate checks plus a dedicated `state-packs` job that builds `state-memory.gtpack` and `state-redis.gtpack`.
+  - `ci.yml`: host-crate checks plus a dedicated `state-packs` job that builds `state-memory.gtpack`, `state-redis.gtpack` and `state-sorla.gtpack`.
   - `publish.yml`: crates.io publish for the Rust crate plus GHCR publish for the two state `.gtpack` artifacts.
 
 ### State packs
@@ -112,13 +122,16 @@ This repo now owns the source and publishing pipeline for:
 
 - `state-memory.gtpack`
 - `state-redis.gtpack`
+- `state-sorla.gtpack`
 
 The relevant directories are:
 
 - `components/state-provider-memory`
 - `components/state-provider-redis`
+- `components/state-provider-sorla`
 - `packs/state-memory`
 - `packs/state-redis`
+- `packs/state-sorla`
 
 The state pack build/publish entrypoints are:
 

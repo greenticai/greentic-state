@@ -81,3 +81,4 @@ PY
 
 push_pack "state-memory"
 push_pack "state-redis"
+push_pack "state-sorla"

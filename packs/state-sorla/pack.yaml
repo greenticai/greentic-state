@@ -1,13 +1,14 @@
-pack_id: state-redis
-version: 1.2.0-dev.0
+pack_id: state-sorla
+version: 1.2.0-dev.1
 kind: application
 publisher: Greentic
-name: Redis State Provider
-description: Persistent key-value state provider backed by Redis. Suitable for production
-  environments with distributed state requirements.
+name: SoRLa State Provider
+description: Durable key-value state provider that stores conversation state through
+  an HTTPS state door hosted by the platform. The deployed runtime holds a per-unit
+  token and never a database credential.
 components:
-- id: state-provider-redis
-  version: 1.2.0-dev.0
+- id: state-provider-sorla
+  version: 1.2.0-dev.1
   world: greentic:component/component-v0-v6-v0@0.6.1
   supports:
   - component_config
@@ -20,8 +21,8 @@ components:
       random: false
       clocks: false
     host: {}
-  wasm: components/state-provider-redis/state-provider-redis.wasm
-  manifest: components/state-provider-redis/component.manifest.json
+  wasm: components/state-provider-sorla/state-provider-sorla.wasm
+  manifest: components/state-provider-sorla/component.manifest.json
 extensions:
   greentic.ext.capabilities.v1:
     kind: greentic.ext.capabilities.v1
@@ -29,18 +30,18 @@ extensions:
     inline:
       schema_version: 1
       offers:
-      - offer_id: state.redis.kv.01
+      - offer_id: state.sorla.kv.01
         cap_id: greentic.cap.state.kv.v1
         version: 0.4.39
         provider:
-          component_ref: state-provider-redis
+          component_ref: state-provider-sorla
           op: state.dispatch
-        priority: 50
+        priority: 40
         requires_setup: true
         setup:
-          qa_ref: components/state-provider-redis
+          qa_ref: components/state-provider-sorla
         metadata:
           ephemeral: false
-          backend: redis
+          backend: sorla
 assets:
 - path: secret-requirements.json
