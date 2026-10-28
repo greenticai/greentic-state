@@ -40,6 +40,12 @@ pub struct RedisStateStore {
     upsert_script: Script,
 }
 
+/// Whether `err` means the connection itself is unusable, as opposed to Redis
+/// refusing a command. Only the first kind is cured by opening a new one.
+fn connection_lost(err: &redis::RedisError) -> bool {
+    err.is_connection_dropped() || err.is_io_error() || err.is_timeout()
+}
+
 impl RedisStateStore {
     /// Creates a store using an existing Redis client.
     pub fn new(client: redis::Client) -> Self {
@@ -57,23 +63,48 @@ impl RedisStateStore {
         Ok(Self::new(client))
     }
 
+    /// Runs `f` on the cached connection, opening one when there is none.
+    ///
+    /// A connection that died (Redis restarted, failed over, or closed an idle
+    /// socket) is dropped from the slot and the command is retried ONCE on a
+    /// fresh one. Without that the dead connection stayed cached and every
+    /// later command failed with `Broken pipe` after Redis had come back.
+    ///
+    /// The retry can repeat a command whose reply was lost after Redis ran it.
+    /// Every command this store sends is safe to repeat except
+    /// `set_json_if_absent`, where a lost reply can make the retry report that
+    /// the key already existed; callers of that method must treat `false` as
+    /// "someone wrote it", which is what it already means.
     fn with_connection<T>(
         &self,
         mut f: impl FnMut(&mut Connection) -> RedisResult<T>,
     ) -> GResult<T> {
         let mut guard = self.connection.lock();
-        if guard.is_none() {
-            *guard = Some(
-                self.client
-                    .get_connection()
-                    .map_err(|err| from_redis(err, "connect redis"))?,
-            );
+        let mut retried = false;
+        loop {
+            if guard.is_none() {
+                *guard = Some(
+                    self.client
+                        .get_connection()
+                        .map_err(|err| from_redis(err, "connect redis"))?,
+                );
+            }
+            let Some(conn) = guard.as_mut() else {
+                return Err(internal("redis connection not initialized"));
+            };
+            match f(conn) {
+                Ok(value) => return Ok(value),
+                Err(err) if connection_lost(&err) => {
+                    *guard = None;
+                    if retried {
+                        return Err(from_redis(err, "redis command"));
+                    }
+                    retried = true;
+                    debug!(error = %err, "redis connection lost; reconnecting once");
+                }
+                Err(err) => return Err(from_redis(err, "redis command")),
+            }
         }
-
-        let Some(conn) = guard.as_mut() else {
-            return Err(internal("redis connection not initialized"));
-        };
-        f(conn).map_err(|err| from_redis(err, "redis command"))
     }
 
     fn load_document(&self, key: &FqnKey) -> GResult<Option<Value>> {
